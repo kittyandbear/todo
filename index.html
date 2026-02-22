@@ -838,6 +838,11 @@
         '選擇「加入主畫面」',
         '點擊右上角「加入」'
       ],
+      ios_chrome: [
+        '點擊右上角的「<img src="images/ios_share.svg" alt="分享" class="pwa-step-icon">」分享按鈕',
+        '選擇「加入主畫面」',
+        '點擊右上角「加入」'
+      ],
       chrome: [
         '點擊右上角「⋮」選單',
         '選擇「新增至主畫面」或「安裝應用程式」',
@@ -855,7 +860,8 @@
       const isIOS = /iPhone|iPad|iPod/.test(ua);
       const isAndroid = /Android/i.test(ua);
       const isChrome = /Chrome/i.test(ua) && !/Edge|Edg/i.test(ua);
-      if (isIOS) return 'safari';  // iOS 上 Safari 與 Chrome 皆用分享鈕加入主畫面
+      if (isIOS && /CriOS/i.test(ua)) return 'ios_chrome';  // iOS Chrome：分享鈕在右上角
+      if (isIOS) return 'safari';  // iOS Safari：分享鈕在底部
       if (isAndroid && isChrome) return 'chrome';
       return 'other';
     }
