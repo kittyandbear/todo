@@ -171,6 +171,17 @@
       margin: 12px 0;
       border: 1px solid var(--border);
     }
+    .step-imgs-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .step-imgs-row .step-img {
+      flex: 1;
+      min-width: 80px;
+      margin: 0;
+    }
     .step-img-placeholder {
       height: 160px;
       background: #f5f5f5;
@@ -182,6 +193,58 @@
       color: var(--text-muted);
       font-size: 13px;
     }
+    .step-videos {
+      margin: 12px 0;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .step-video-item {
+      flex: 1;
+      min-width: 140px;
+    }
+    .step-video-item .step-video-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 0 0 6px 0;
+    }
+    .step-video-item video {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #000;
+    }
+
+    /* 手機版：step-videos 改為上下排列（label 在對應 video 上方），step-imgs-row 上下排列，圖片完整顯示，前往設定頁隱藏 */
+    @media (max-width: 768px) {
+      .step-videos {
+        flex-direction: column;
+      }
+      .step-video-item {
+        min-width: 100%;
+      }
+      .step-imgs-row {
+        flex-direction: column;
+      }
+      .step-imgs-row .step-img {
+        max-width: 100%;
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        flex: none;
+      }
+      .step-imgs-row {
+        overflow: visible;
+      }
+      #acc11.open {
+        max-height: 8000px;
+      }
+      .go-settings-btn {
+        display: none !important;
+      }
+    }
+
     .copy-btn {
       margin-top: 12px;
       padding: 10px 20px;
@@ -782,7 +845,7 @@ function getDateLabel(date, today) {
         <p class="step-desc">📱 掃描 QR Code，或 用手機瀏覽器輸入下方網址。</p>
         <div class="step-accordion" id="acc9">
           <div class="step-detail">
-            <div class="step-img-placeholder">📷 QR Code 放置區</div>
+            <img src="images/qrcode.png" alt="QR Code" style="max-width:200px;height:auto" />
             <p id="appUrlDisplay" style="word-break:break-all;font-size:13px;color:var(--text-muted)"></p>
             <p class="step-tip">📌 請使用 Safari（iPhone）或 Chrome（Android），不建議使用 IG / LINE 內建瀏覽器</p>
           </div>
@@ -799,7 +862,16 @@ function getDateLabel(date, today) {
         <p class="step-desc">在瀏覽器中點擊「分享」按鈕，選擇「加入主畫面」。完成後，手機桌面會出現「熊熊貓貓」圖示 </p>
         <div class="step-accordion" id="acc10">
           <div class="step-detail">
-            <div class="step-img-placeholder">📷 iOS / Android 加入主畫面截圖</div>
+            <div class="step-videos">
+              <div class="step-video-item">
+                <p class="step-video-label">Safari</p>
+                <video src="manual/safari_video.mov" muted playsinline loop id="safariVideo"></video>
+              </div>
+              <div class="step-video-item">
+                <p class="step-video-label">Chrome</p>
+                <video src="manual/chrome_video.mov" muted playsinline loop id="chromeVideo"></video>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -808,13 +880,17 @@ function getDateLabel(date, today) {
       <div class="step-card" id="step11" data-step="11">
         <div class="step-header" onclick="toggleAccordion(11)">
           <span class="step-num">3</span>
-          <h2 class="step-title">貼上專屬連線網址，測試連線</h2>
+          <h2 class="step-title">貼上「專屬連線網址」，測試連線</h2>
           <div class="step-expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
         </div>
         <p class="step-desc">打開剛剛安裝好的APP，點擊「前往設定」，將剛剛複製的「網頁應用程式網址」貼上，點擊「測試連線」。</p>
         <div class="step-accordion" id="acc11">
           <div class="step-detail">
-            <a href="./settings.html" class="btn copy-btn">前往設定頁</a>
+            <div class="step-imgs-row">
+              <img src="manual/p3-1.png" alt="" class="step-img" />
+              <img src="manual/p3-2.png" alt="" class="step-img" />
+              <img src="manual/p3-3.png" alt="" class="step-img" />
+            </div>
           </div>
         </div>
       </div>
@@ -829,7 +905,10 @@ function getDateLabel(date, today) {
         <p class="step-desc">若畫面出現：✅ 連線成功！已讀到你的 Google Sheets，請點擊「儲存並啟用」。</p>
         <div class="step-accordion" id="acc12">
           <div class="step-detail">
-            <p class="step-tip">📌 儲存後點擊「返回待辦清單」即可開始使用</p>
+            <div class="step-imgs-row">
+              <img src="manual/p4-1.png" alt="" class="step-img" />
+              <img src="manual/p4-2.png" alt="" class="step-img" />
+            </div>
           </div>
         </div>
       </div>
@@ -838,14 +917,17 @@ function getDateLabel(date, today) {
       <div class="step-card" id="step13" data-step="13">
         <div class="step-header" onclick="toggleAccordion(13)">
           <span class="step-num">5</span>
-          <h2 class="step-title">完成 🎉</h2>
+          <h2 class="step-title">恭喜你！APP 設定完成 🎉</h2>
           <div class="step-expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
         </div>
-        <p class="step-desc">點擊「返回待辦清單」。若畫面中出現「範例 A」「範例 B」等預設資料，恭喜你！安裝完成啦！</p>
+        <p class="step-desc">點擊左上角「返回」。若畫面中出現「範例 A」「範例 B」等預設資料，恭喜你！安裝完成啦！</p>
         <div class="step-accordion" id="acc13">
           <div class="step-detail">
-            <p>🎉 恭喜你！你專屬的熊熊貓貓待辦清單已經安裝完成啦！</p>
-            <p>現在開始，和另一半一起記錄生活吧 ❤️</p>
+            <div class="step-imgs-row">
+              <img src="manual/p5-1.png" alt="" class="step-img" />
+              <img src="manual/p5-2.png" alt="" class="step-img" />
+            </div>
+            <p>🎉 恭喜你！你專屬的熊熊貓貓待辦清單已經安裝完成啦！ 現在開始，和另一半一起記錄生活吧 ❤️</p>
           </div>
         </div>
       </div>
@@ -922,7 +1004,7 @@ function getDateLabel(date, today) {
       sheetTemplate: 'https://docs.google.com/spreadsheets/d/1_38-IQwS9Vj1iHzXWJAQ68WghhwBUvRGLVG8RobUDpg/copy',
       feedbackForm: 'https://forms.google.com/YOUR_FEEDBACK_FORM',
       settingsPage: './settings.html',
-      appUrl: '' // 留空則自動使用當前網址的 index.html
+      appUrl: 'https://kittyandbear.github.io/todo/index.html'
     };
     const appUrl = CONFIG.appUrl || new URL('./index.html', window.location.href).href;
     const urlEl = document.getElementById('appUrlDisplay');
@@ -934,6 +1016,15 @@ function getDateLabel(date, today) {
       const card = document.querySelector('[data-step="' + n + '"]');
       if (acc) acc.classList.toggle('open');
       if (card) card.classList.toggle('open');
+      // Step 10: 展開時自動播放影片
+      if (n === 10) {
+        const videos = acc?.querySelectorAll('video');
+        if (acc?.classList.contains('open') && videos?.length) {
+          videos.forEach(v => v.play().catch(() => {}));
+        } else if (videos?.length) {
+          videos.forEach(v => { v.pause(); });
+        }
+      }
     }
 
     // FAQ accordion
