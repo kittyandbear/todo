@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="熊熊貓貓待辦清單APP｜設定與安裝教學" />
+  <title> 熊熊貓貓待辦清單APP｜設定與安裝教學 </title>
+  <style>
+    :root {
+      --bg: #faf8f5;
+      --card: #fff;
+      --text: #2d2d2d;
+      --text-muted: #6b6b6b;
+      --accent: #e8b4bc;
+      --accent-dark: #d4a0a8;
+      --success: #5fd39c;
+      --border: #eee;
+      --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 40px;
+    }
+    a { color: #c97b84; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    a[target="_blank"]::after { content: " ↗"; font-size: 0.8em; opacity: 0.7; }
+
+    /* Config - 集中管理連結 */
+    .config { display: none; }
+    #config-sheet-url { content: attr(data-url); }
+    #config-feedback-url { content: attr(data-url); }
+    #config-settings-url { content: attr(data-url); }
+
+    .container { max-width: 800px; margin: 0 auto; padding: 0 12px; }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 48px 24px 40px;
+    }
+    .hero h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0 0 12px;
+      color: var(--text);
+      line-height: 1.35;
+    }
+    .hero .sub {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+    .hero-btns { display: flex; flex-direction: column; gap: 12px; }
+    .btn {
+      display: inline-block;
+      padding: 16px 24px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary {
+      background: linear-gradient(135deg, #e8b4bc, #d4a0a8);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(212,160,168,0.4);
+    }
+    .btn-secondary {
+      background: var(--card);
+      color: var(--text);
+      border: 2px solid var(--border);
+    }
+
+    .section-title-main {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 32px 0 12px;
+      color: var(--text);
+    }
+    .section-intro {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .step-tip {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      padding-left: 4px;
+    }
+    .step-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 16px 0;
+    }
+    .step-detail .step-desc {
+      margin: 8px 0 0 0;
+    }
+
+    /* Steps */
+    .steps { padding: 0 0 32px; }
+    .step-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .step-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+    }
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .step-title { font-size: 17px; font-weight: 600; margin: 0; flex: 1; }
+    .step-expand {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: transform 0.3s ease;
+    }
+    .step-card.open .step-expand { transform: rotate(180deg); color: var(--accent-dark); }
+    .step-expand svg { width: 20px; height: 20px; }
+    .step-desc {
+      margin: 12px 0 0 44px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .step-accordion {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .step-accordion.open { max-height: 2000px; }
+    .step-detail {
+      margin: 16px 0 0 44px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--text);
+    }
+    .step-detail img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+    }
+    .step-img-placeholder {
+      height: 160px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      margin: 12px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .copy-btn {
+      margin-top: 12px;
+      padding: 10px 20px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .copy-btn:active { opacity: 0.9; }
+    .copy-btn-before-code { margin-bottom: 16px; }
+    .code-block {
+      background: #1e1e1e;
+      color: #e0e0e0;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: "SF Mono", Monaco, monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    /* FAQ */
+    .faq { padding: 24px 0; }
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0 0 20px;
+      padding: 0 4px;
+    }
+    .faq-item {
+      background: var(--card);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .faq-q {
+      padding: 16px 20px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .faq-q::after {
+      content: "+";
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.3s;
+    }
+    .faq-item.open .faq-q::after { transform: rotate(45deg); }
+    .faq-a {
+      padding: 0 20px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .faq-item.open .faq-a { max-height: 500px; }
+    .faq-a-inner {
+      padding: 0 0 16px;
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Troubleshooting */
+    .trouble { padding: 24px 0; }
+    .trouble-item {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .trouble-symptom { font-weight: 600; color: #c97b84; margin-bottom: 8px; }
+    .trouble-fix { font-size: 14px; color: var(--text-muted); }
+
+    /* Security */
+    .security {
+      background: linear-gradient(135deg, #f8f0f2, #f5e8eb);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 24px 0;
+    }
+    .security h3 { margin: 0 0 12px; font-size: 16px; }
+    .security p { margin: 0; font-size: 14px; color: var(--text-muted); }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    footer a { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <!-- Config 區塊：集中管理 -->
+  <div class="config" id="config">
+    <span id="config-sheet-url" data-url="https://docs.google.com/spreadsheets/d/1_38-IQwS9Vj1iHzXWJAQ68WghhwBUvRGLVG8RobUDpg/copy">Sheet 範本</span>
+    <span id="config-feedback-url" data-url="https://forms.google.com/YOUR_FEEDBACK_FORM">回饋表單</span>
+    <span id="config-settings-url" data-url="./settings.html">設定頁</span>
+  </div>
+
+  <div class="container">
+    <!-- Hero -->
+    <section class="hero">
+      <h1>熊熊貓貓待辦清單APP｜設定與安裝教學</h1>
+      <p class="sub">本待辦清單使用 <strong>你自己的 Google Sheets</strong> 當資料庫</p>
+      <p class="sub">不用註冊、不用下載 App，資料只屬於你們 ❤️</p>
+      <p class="sub">整個流程大約 5–10 分鐘完成</p>
+      <a href="./settings.html" class="btn btn-secondary" style="margin-top:16px">我已經有連線網址了，直接設定</a>
+    </section>
+
+    <!-- Steps -->
+    <section class="steps" id="steps">
+      <h2 class="section-title-main">一、建立你們專屬的待辦清單「資料庫」（建議用電腦完成）</h2>
+      <p class="section-intro">這一步的目的只有一個：幫你們建立一份「只屬於你們的待辦清單」，之後手機 App 才知道資料要存在哪裡。</p>
+      <p class="section-intro">不用懂程式，只要照著畫面點就好 👇</p>
+
+      <!-- Step 1 -->
+      <div class="step-card" id="step1" data-step="1">
+        <div class="step-header" onclick="toggleAccordion(1)">
+          <span class="step-num">1</span>
+          <h2 class="step-title">建立google sheets資料表</h2>
+          <div class="step-expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <p class="step-desc">透過待辦清單資料表範本建立</p>
+        <div class="step-accordion" id="acc1">
+          <div class="step-detail">
+            <p class="step-desc">1-1 點擊教學頁上的【複製待辦清單資料表】按鈕。</p>
+            <p><a href="https://docs.google.com/spreadsheets/d/1_38-IQwS9Vj1iHzXWJAQ68WghhwBUvRGLVG8RobUDpg/copy" target="_blank" class="btn copy-btn">👉點我【複製待辦清單資料表】</a></p>
+            <hr class="step-divider" />
+            <p class="step-desc">1-2 畫面會出現「複製文件」，直接點擊藍色的【建立副本】。</p>
+            <p><img src="manual/01.png" alt="" class="step-img" /></p>
+            <hr class="step-divider" />
+            <p class="step-desc">1-3 直接點擊藍色的【建立副本】。</p>
+            <p><img src="manual/01-1.png" alt="" class="step-img" /></p>
+            <p class="step-tip">📌 小提醒：不用改名稱、不用選資料夾，這份表格會自動存到你的 Google 雲端硬碟</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-card" id="step2" data-step="2">
+        <div class="step-header" onclick="toggleAccordion(2)">
+          <span class="step-num">2</span>
+          <h2 class="step-title">打開 Google sheets 的「Apps Script」設定頁面</h2>
+          <div class="step-expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <p class="step-desc">在剛剛複製好的 Google sheets 中，點擊上方選單【擴充功能】→【Apps Script】。</p>
+        <div class="step-accordion" id="acc2">
+          <div class="step-detail">
+            <img src="manual/02.png" alt="擴充功能 → Apps Script" class="step-img" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-card" id="step3" data-step="3">
+        <div class="step-header" onclick="toggleAccordion(3)">
+          <span class="step-num">3</span>
+          <h2 class="step-title">設定程式碼</h2>
+          <div class="step-expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <p class="step-desc">把原本程式碼清空，貼上我們準備好的程式碼，點擊「儲存」</p>
+        <div class="step-accordion" id="acc3">
+          <div class="step-detail">
+            <p><img src="manual/04.png" alt="" class="step-img" /></p>
+            <button class="copy-btn copy-btn-before-code" onclick="copyScript()">複製程式碼</button>
+            <div class="code-block" id="scriptCode">// Sheet configuration
+const SHEET_NAME = 'items';
+const HEADER_ROW = 1;
+
+// Column indices (0-based)
+const COL_ID = 0;
+const COL_TEXT = 1;
+const COL_TYPE = 2;
+const COL_SUBTYPE = 3;
+const COL_PRIORITY = 4;
+const COL_STATUS = 5;
+const COL_CREATED_AT = 6;
+const COL_UPDATED_AT = 7;
+const COL_DUE_DATE = 8;
+const COL_CREATED_BY = 9;
+const COL_NOTE = 10;
+const COL_ASSIGNEE = 11;
+
+// GET handler
+function doGet(e) {
+  try {
+    const action = e.parameter.action || '';
+    
+    if (action === 'items') {
+      return handleGetItems(e);
+    } else if (action === 'calendar') {
+      return handleGetCalendar(e);
+    } else {
+      return createResponse({ error: 'Invalid action' }, 400);
+    }
+  } catch (error) {
+    return createResponse({ error: error.toString() }, 500);
+  }
+}
+
+// POST handler
+function doPost(e) {
+  try {
+    let postData;
+    
+    // Handle FormData
+    if (e.parameter &amp;&amp; e.parameter.payload) {
+      postData = JSON.parse(e.parameter.payload);
+    }
+    // Handle JSON body
+    else if (e.postData &amp;&amp; e.postData.contents) {
+      postData = JSON.parse(e.postData.contents);
+    } else {
+      return createResponse({ error: 'No POST data received' }, 400);
+    }
+    
+    const action = postData.action || '';
+    
+    if (action === 'create') {
+      return handleCreateItem(postData);
+    } else if (action === 'update') {
+      return handleUpdateItem(postData);
+    } else if (action === 'archive') {
+      return handleArchiveItem(postData);
+    } else {
+      return createResponse({ error: 'Invalid action: ' + action }, 400);
+    }
+  } catch (error) {
+    return createResponse({ error: error.toString() }, 500);
+  }
+}
+
+// GET /items
+function handleGetItems(e) {
+  const sheet = getSheet();
+  const data = sheet.getDataRange().getValues();
+  const rows = data.slice(HEADER_ROW);
+  
+  let items = rows.map((row) =&gt; {
+    return {
+      id: row[COL_ID],
+      text: row[COL_TEXT],
+      type: row[COL_TYPE],
+      subtype: row[COL_SUBTYPE] || '',
+      priority: row[COL_PRIORITY],
+      status: row[COL_STATUS],
+      createdAt: row[COL_CREATED_AT],
+      updatedAt: row[COL_UPDATED_AT],
+      dueDate: row[COL_DUE_DATE] || '',
+      createdBy: row[COL_CREATED_BY] || '',
+      note: row[COL_NOTE] || '',
+      assignee: (row[COL_ASSIGNEE] !== undefined &amp;&amp; row[COL_ASSIGNEE] !== null) ? row[COL_ASSIGNEE] : ''
+    };
+  });
+  
+  // Filter by status
+  const status = e.parameter.status || 'active';
+  items = items.filter(item =&gt; item.status === status);
+  
+  // Filter by type if specified
+  if (e.parameter.type) {
+    items = items.filter(item =&gt; item.type === e.parameter.type);
+  }
+  
+  // Sort: priority (high -&gt; mid -&gt; low), then updatedAt desc
+  const priorityOrder = { high: 1, mid: 2, low: 3 };
+  items.sort((a, b) =&gt; {
+    const priorityDiff = (priorityOrder[a.priority] || 99) - (priorityOrder[b.priority] || 99);
+    if (priorityDiff !== 0) return priorityDiff;
+    return (b.updatedAt || 0) - (a.updatedAt || 0);
+  });
+  
+  return createResponse({ items: items });
+}
+
+// POST /items (create)
+function handleCreateItem(data) {
+  const sheet = getSheet();
+  const now = Date.now();
+  const id = 'it_' + now;
+  
+  const row = [
+    id,
+    data.text || '',
+    data.type || 'todo',
+    data.subtype || '',
+    data.priority || 'mid',
+    'active',
+    now,
+    now,
+    data.dueDate || '',
+    data.createdBy || '',
+    data.note || '',
+    data.assignee || ''
+  ];
+  
+  sheet.appendRow(row);
+  
+  return createResponse({
+    success: true,
+    item: {
+      id: id,
+      text: data.text,
+      type: data.type,
+      subtype: data.subtype || '',
+      priority: data.priority,
+      status: 'active',
+      createdAt: now,
+      updatedAt: now,
+      dueDate: data.dueDate || '',
+      createdBy: data.createdBy || '',
+      note: data.note || '',
+      assignee: data.assignee || ''
+    }
+  });
+}
+
+// PATCH /items/:id (update)
+function handleUpdateItem(data) {
+  const sheet = getSheet();
+  const dataRange = sheet.getDataRange();
+  const values = dataRange.getValues();
+  
+  let rowIndex = -1;
+  for (let i = HEADER_ROW; i &lt; values.length; i++) {
+    if (values[i][COL_ID] === data.id) {
+      rowIndex = i;
+      break;
+    }
+  }
+  
+  if (rowIndex === -1) {
+    return createResponse({ error: 'Item not found' }, 404);
+  }
+  
+  const row = values[rowIndex];
+  const now = Date.now();
+  
+  // Ensure row has enough columns (for backward compatibility)
+  while (row.length &lt;= COL_ASSIGNEE) {
+    row.push('');
+  }
+  
+  if (data.status !== undefined) row[COL_STATUS] = data.status;
+  if (data.text !== undefined) row[COL_TEXT] = data.text;
+  if (data.priority !== undefined) row[COL_PRIORITY] = data.priority;
+  if (data.subtype !== undefined) row[COL_SUBTYPE] = data.subtype;
+  if (data.assignee !== undefined) row[COL_ASSIGNEE] = data.assignee;
+  if (data.dueDate !== undefined) row[COL_DUE_DATE] = data.dueDate;
+  if (data.note !== undefined) row[COL_NOTE] = data.note;
+  
+  row[COL_UPDATED_AT] = now;
+  
+  const range = sheet.getRange(rowIndex + 1, 1, 1, row.length);
+  range.setValues([row]);
+  
+  return createResponse({
+    success: true,
+    item: {
+      id: row[COL_ID],
+      text: row[COL_TEXT],
+      type: row[COL_TYPE],
+      subtype: row[COL_SUBTYPE] || '',
+      priority: row[COL_PRIORITY],
+      status: row[COL_STATUS],
+      createdAt: row[COL_CREATED_AT],
+      updatedAt: row[COL_UPDATED_AT],
+      dueDate: row[COL_DUE_DATE] || '',
+      createdBy: row[COL_CREATED_BY] || '',
+      note: row[COL_NOTE] || '',
+      assignee: (row[COL_ASSIGNEE] !== undefined &amp;&amp; row[COL_ASSIGNEE] !== null) ? row[COL_ASSIGNEE] : ''
+    }
+  });
+}
+
+// PATCH /items/:id/archive
+function handleArchiveItem(data) {
+  const sheet = getSheet();
+  const dataRange = sheet.getDataRange();
+  const values = dataRange.getValues();
+  
+  let rowIndex = -1;
+  for (let i = HEADER_ROW; i &lt; values.length; i++) {
+    if (values[i][COL_ID] === data.id) {
+      rowIndex = i;
+      break;
+    }
+  }
+  
+  if (rowIndex === -1) {
+    return createResponse({ error: 'Item not found' }, 404);
+  }
+  
+  const row = values[rowIndex];
+  row[COL_STATUS] = 'archived';
+  row[COL_UPDATED_AT] = Date.now();
+  
+  const range = sheet.getRange(rowIndex + 1, 1, 1, row.length);
+  range.setValues([row]);
+  
+  return createResponse({ success: true });
+}
+
+// GET /calendar
+function handleGetCalendar(e) {
+  const days = parseInt(e.parameter.days || '3', 10);
+  const calendar = CalendarApp.getDefaultCalendar();
+  const now = new Date();
+  const endDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+  
+  const events = calendar.getEvents(now, endDate);
+  
+  const eventsByDate = {};
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  events.forEach(event =&gt; {
+    const eventDate = new Date(event.getStartTime());
+    const dateKey = formatDate(eventDate);
+    const dateLabel = getDateLabel(eventDate, today);
+    
+    if (!eventsByDate[dateKey]) {
+      eventsByDate[dateKey] = {
+        date: dateKey,
+        label: dateLabel,
+        events: []
+      };
+    }
+    
+    eventsByDate[dateKey].events.push({
+      start: formatTime(event.getStartTime()),
+      end: formatTime(event.getEndTime()),
+      title: event.getTitle(),
+      description: event.getDescription() || ''
+    });
+  });
+  
+  const daysArray = Object.values(eventsByDate).sort((a, b) =&gt; {
+    return a.date.localeCompare(b.date);
+  });
+  
+  return createResponse({ days: daysArray });
+}
+
+// Helper: Get sheet
+function getSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_NAME);
+  
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_NAME);
+    sheet.getRange(HEADER_ROW, 1, 1, 12).setValues([[
+      'id', 'text', 'type', 'subtype', 'priority', 'status',
+      'createdAt', 'updatedAt', 'dueDate', 'createdBy', 'note', 'assignee'
+    ]]);
+  }
+  
+  return sheet;
+}
+
+// Helper: Create response
+function createResponse(data, statusCode = 200) {
+  const output = ContentService.createTextOutput(JSON.stringify(data));
+  output.setMimeType(ContentService.MimeType.JSON);
+  return output;
+}
+
+// Helper: Format date
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// Helper: Format time
+function formatTime(date) {
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+// Helper: Get date label
+function getDateLabel(date, today) {
+  const diffDays = Math.floor((date - today) / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Tomorrow';
+  if (diffDays === 2) return 'Day+2';
+  
+  return formatDate(date);
+}</div>
+            <p><img src="manual/04-1.png" alt="" class="step-img" /></p>
+            <p class="step-tip">📌 請放心：不需要看懂內容、不需要修改任何一行 —「全刪 → 全貼 → 儲存」就對了</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="step-card" id="step4" data-step="4">
+        <div class="step-header" onclick="toggleAccordion(4)">
+          <span class="step-num">4</span>
+          <h2 class="step-title">新增部署作業</h2>
+          <div class="step-expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <p class="step-desc">點擊右上角【部署】，選擇【新增部署作業】。</p>
+        <div class="step-accordion" id="acc4">
+          <div class="step-detail">
+            <img src="manual/05.png" alt="部署 → 新增部署作業" class="step-img" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="step-card" id="step5" data-step="5">
+        <div class="step-header" onclick="toggleAccordion(5)">
+          <span class="step-num">5</span>
+          <h2 class="step-title">選擇「網頁應用程式」</h2>
+          <div class="step-expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <p class="step-desc">點擊齒輪圖示 ⚙️，選擇【網頁應用程式】。</p>
+        <div class="step-accordion" id="acc5">
+          <div class="step-detail">
+            <img src="manual/06.png" alt="選擇網頁應用程式" class="step-img" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6 -->
+      <div class="step-card" id="step6" data-step="6">
+        <div class="step-header" onclick="toggleAccordion(6)">
+          <span class="step-num">6</span>
+          <h2 class="step-title">設定存取權限</h2>
+          <div class="step-expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <p class="step-desc">請照下面設定：執行身分選「我（你的 Google 帳號）」、誰可以存取選【所有人】，然後點擊右下角【部署】->【授權存取權限】。</p>
+        <div class="step-accordion" id="acc6">
+          <div class="step-detail">
+            <p><img src="manual/07.png" alt="" class="step-img" /><img src="manual/08.png" alt="" class="step-img" /></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 7 -->
+      <div class="step-card" id="step7" data-step="7">
+        <div class="step-header" onclick="toggleAccordion(7)">
+          <span class="step-num">7</span>
+          <h2 class="step-title">Google 授權</h2>
+          <div class="step-expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <p class="step-desc">授權 Google sheets 資料好讓APP可以讀取 </p>
+        <div class="step-accordion" id="acc7">
+          <div class="step-detail">
+            <p class="step-desc">7-1 看到「尚未通過 Google 驗證」是正常的。點擊【進階】→【繼續】。(第一次會跳出此畫面)</p>
+            <hr class="step-divider" />
+            <p class="step-desc">7-2 勾選全部權限 → 點擊【Continue】。</p>
+            <p><img src="manual/09.png" alt="" class="step-img" /><img src="manual/10.png" alt="" class="step-img" /></p>
+            <hr class="step-divider" />
+            <p class="step-tip">📌 重點說明：這個授權是「你自己允許你自己的Google sheets資料運作」，此APP的作者是看不到你的資料！</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 8 -->
+      <div class="step-card" id="step8" data-step="8">
+        <div class="step-header" onclick="toggleAccordion(8)">
+          <span class="step-num">8</span>
+          <h2 class="step-title">複製你的「專屬連線網址」</h2>
+          <div class="step-expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <p class="step-desc">畫面顯示「已成功更新部署作業」後，在「網頁應用程式」下面點擊【複製】網址。</p>
+        <div class="step-accordion" id="acc8">
+          <div class="step-detail">
+            <p><img src="manual/11.png" alt="" class="step-img" /></p>
+            <p class="step-tip">🔑 這個網址非常重要，請先留著，下一步手機 APP 會用到它</p>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-title-main">二、APP 安裝與設定（手機完成）</h2>
+      <p class="section-intro">接下來的步驟 <strong>全部用手機</strong> 就可以完成</p>
+
+      <!-- Step 9 -->
+      <div class="step-card" id="step9" data-step="9">
+        <div class="step-header" onclick="toggleAccordion(9)">
+          <span class="step-num">1</span>
+          <h2 class="step-title">在手機上打開待辦清單網頁</h2>
+          <div class="step-expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <p class="step-desc">📱 掃描 QR Code，或 用手機瀏覽器輸入下方網址。</p>
+        <div class="step-accordion" id="acc9">
+          <div class="step-detail">
+            <div class="step-img-placeholder">📷 QR Code 放置區</div>
+            <p id="appUrlDisplay" style="word-break:break-all;font-size:13px;color:var(--text-muted)"></p>
+            <p class="step-tip">📌 請使用 Safari（iPhone）或 Chrome（Android），不建議使用 IG / LINE 內建瀏覽器</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 10 -->
+      <div class="step-card" id="step10" data-step="10">
+        <div class="step-header" onclick="toggleAccordion(10)">
+          <span class="step-num">2</span>
+          <h2 class="step-title">把網頁加入到手機主畫面（像 APP 一樣）</h2>
+          <div class="step-expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <p class="step-desc">在瀏覽器中點擊「分享」按鈕，選擇「加入主畫面」。完成後，手機桌面會出現「熊熊貓貓」圖示 </p>
+        <div class="step-accordion" id="acc10">
+          <div class="step-detail">
+            <div class="step-img-placeholder">📷 iOS / Android 加入主畫面截圖</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 11 -->
+      <div class="step-card" id="step11" data-step="11">
+        <div class="step-header" onclick="toggleAccordion(11)">
+          <span class="step-num">3</span>
+          <h2 class="step-title">貼上專屬連線網址，測試連線</h2>
+          <div class="step-expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <p class="step-desc">打開剛剛安裝好的APP，點擊「前往設定」，將剛剛複製的「網頁應用程式網址」貼上，點擊「測試連線」。</p>
+        <div class="step-accordion" id="acc11">
+          <div class="step-detail">
+            <a href="./settings.html" class="btn copy-btn">前往設定頁</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 12 -->
+      <div class="step-card" id="step12" data-step="12">
+        <div class="step-header" onclick="toggleAccordion(12)">
+          <span class="step-num">4</span>
+          <h2 class="step-title">儲存並啟用</h2>
+          <div class="step-expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <p class="step-desc">若畫面出現：✅ 連線成功！已讀到你的 Google Sheets，請點擊「儲存並啟用」。</p>
+        <div class="step-accordion" id="acc12">
+          <div class="step-detail">
+            <p class="step-tip">📌 儲存後點擊「返回待辦清單」即可開始使用</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 13 -->
+      <div class="step-card" id="step13" data-step="13">
+        <div class="step-header" onclick="toggleAccordion(13)">
+          <span class="step-num">5</span>
+          <h2 class="step-title">完成 🎉</h2>
+          <div class="step-expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <p class="step-desc">點擊「返回待辦清單」。若畫面中出現「範例 A」「範例 B」等預設資料，恭喜你！安裝完成啦！</p>
+        <div class="step-accordion" id="acc13">
+          <div class="step-detail">
+            <p>🎉 恭喜你！你專屬的熊熊貓貓待辦清單已經安裝完成啦！</p>
+            <p>現在開始，和另一半一起記錄生活吧 ❤️</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Security -->
+    <section class="security">
+      <h3>🔒 安全與隱私</h3>
+      <p>你的資料只存在你自己的 Google 帳號裡，作者看不到你的任何內容。表格、連線網址都是你專屬的。</p>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq">
+      <h2 class="section-title">常見問題</h2>
+      <div class="faq-item" data-faq="1">
+        <div class="faq-q">這個要錢嗎？</div>
+        <div class="faq-a"><div class="faq-a-inner">完全免費，不需要訂閱或付費。</div></div>
+      </div>
+      <div class="faq-item" data-faq="2">
+        <div class="faq-q">我的資料會被作者看到嗎？</div>
+        <div class="faq-a"><div class="faq-a-inner">不會。資料存在你自己的 Google 表格裡，作者無法存取你的資料。</div></div>
+      </div>
+      <div class="faq-item" data-faq="3">
+        <div class="faq-q">為什麼要選「任何人可以存取」？會不會不安全？</div>
+        <div class="faq-a"><div class="faq-a-inner">這是為了讓待辦清單透過網址讀寫你的表格。只有知道這串網址的人才能使用，一般人很難猜到。你的表格仍然受 Google 帳號權限保護。</div></div>
+      </div>
+      <div class="faq-item" data-faq="4">
+        <div class="faq-q">我貼了網址但顯示連線失敗怎麼辦？</div>
+        <div class="faq-a"><div class="faq-a-inner">請確認：網址完整（結尾要有 /exec）、已在 Google 那邊完成部署、若用 IG/LINE 內建瀏覽器請改用 Safari 或 Chrome。詳見下方「排錯」區。</div></div>
+      </div>
+      <div class="faq-item" data-faq="5">
+        <div class="faq-q">另一半要怎麼一起用？</div>
+        <div class="faq-a"><div class="faq-a-inner">把表格分享給對方，或把同一條連線網址給對方貼到他的設定頁。兩人用同一個網址、同一份表格就能同步。</div></div>
+      </div>
+      <div class="faq-item" data-faq="6">
+        <div class="faq-q">我換手機需要重做嗎？</div>
+        <div class="faq-a"><div class="faq-a-inner">不需要。只要到設定頁再貼一次連線網址，或重新打開待辦清單頁面即可。</div></div>
+      </div>
+      <div class="faq-item" data-faq="7">
+        <div class="faq-q">可以匯出資料嗎？</div>
+        <div class="faq-a"><div class="faq-a-inner">可以！表格本身就是你的，直接從 Google 表格下載或匯出即可。</div></div>
+      </div>
+      <div class="faq-item" data-faq="8">
+        <div class="faq-q">這個可以離線嗎？</div>
+        <div class="faq-a"><div class="faq-a-inner">安裝到桌面後會有部分快取，但讀寫資料需要網路。網路較穩時使用體驗最好。</div></div>
+      </div>
+    </section>
+
+    <!-- Troubleshooting -->
+    <section class="trouble">
+      <h2 class="section-title">排錯指南</h2>
+      <div class="trouble-item">
+        <div class="trouble-symptom">症狀：測試連線失敗</div>
+        <div class="trouble-fix">解法：確認網址完整（結尾為 /exec）、已完成「部署」、權限選「任何人」。可試著重新部署一次。</div>
+      </div>
+      <div class="trouble-item">
+        <div class="trouble-symptom">症狀：新增／更新沒反應</div>
+        <div class="trouble-fix">解法：重新整理頁面、改用 Chrome 或 Safari、確認不是 IG 內建瀏覽器。</div>
+      </div>
+      <div class="trouble-item">
+        <div class="trouble-symptom">症狀：另一半看不到資料</div>
+        <div class="trouble-fix">解法：確認兩人使用同一個連線網址，或表格已分享給對方（編輯權限）。</div>
+      </div>
+    </section>
+
+    <footer>
+      <p>版本 v1.0 · <a href="https://forms.google.com/YOUR_FEEDBACK_FORM" target="_blank">回饋表單</a></p>
+    </footer>
+  </div>
+
+  <script>
+    // Config
+    const CONFIG = {
+      sheetTemplate: 'https://docs.google.com/spreadsheets/d/1_38-IQwS9Vj1iHzXWJAQ68WghhwBUvRGLVG8RobUDpg/copy',
+      feedbackForm: 'https://forms.google.com/YOUR_FEEDBACK_FORM',
+      settingsPage: './settings.html',
+      appUrl: '' // 留空則自動使用當前網址的 index.html
+    };
+    const appUrl = CONFIG.appUrl || new URL('./index.html', window.location.href).href;
+    const urlEl = document.getElementById('appUrlDisplay');
+    if (urlEl) urlEl.textContent = '🌐 ' + appUrl;
+
+    // Accordion
+    function toggleAccordion(n) {
+      const acc = document.getElementById('acc' + n);
+      const card = document.querySelector('[data-step="' + n + '"]');
+      if (acc) acc.classList.toggle('open');
+      if (card) card.classList.toggle('open');
+    }
+
+    // FAQ accordion
+    document.querySelectorAll('.faq-item').forEach(item => {
+      item.querySelector('.faq-q').addEventListener('click', () => {
+        item.classList.toggle('open');
+      });
+    });
+
+    // Copy script - 從頁面上的程式碼區塊複製
+    function copyScript() {
+      const block = document.getElementById('scriptCode');
+      const code = block ? block.textContent.trim() : '';
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = block?.closest('.step-detail')?.querySelector('.copy-btn');
+        if (btn) {
+          const orig = btn.textContent;
+          btn.textContent = '✅ 已複製！';
+          setTimeout(() => { btn.textContent = orig; }, 2000);
+        }
+      }).catch(() => {
+        alert('複製失敗，請手動選取上方程式碼複製');
+      });
+    }
+
+    // Update sheet template link
+    document.querySelector('[href*="YOUR_TEMPLATE_ID"]')?.setAttribute('href', CONFIG.sheetTemplate);
+    document.querySelector('footer a[href*="YOUR_FEEDBACK"]')?.setAttribute('href', CONFIG.feedbackForm);
+  </script>
+</body>
+</html>

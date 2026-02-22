@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="連線設定 - 家庭記事本" />
+  <meta name="theme-color" content="#0f0f0f" />
+  <title>連線設定｜家庭記事本</title>
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --card: #1e1e1e;
+      --text: #f5f5f5;
+      --text-muted: #999;
+      --accent: #5fd39c;
+      --error: #ff6b6b;
+      --border: #2a2a2a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 0 20px 40px;
+    }
+    .container { max-width: 420px; margin: 0 auto; }
+
+    .header {
+      padding: 32px 0 24px;
+      text-align: center;
+      position: relative;
+    }
+    .header h1 { font-size: 22px; margin: 0 0 8px; }
+    .header .sub { font-size: 14px; color: var(--text-muted); }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+    .label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #222;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #4da3ff;
+    }
+    textarea { min-height: 80px; resize: vertical; }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .btn {
+      flex: 1;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary {
+      background: var(--accent);
+      color: #111;
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: var(--border);
+      color: var(--text);
+    }
+    .btn-link {
+      background: transparent;
+      color: #c97b84;
+      padding: 12px 0;
+    }
+
+    .result {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
+    }
+    .result.success {
+      display: block;
+      background: rgba(95, 211, 156, 0.15);
+      border: 1px solid rgba(95, 211, 156, 0.4);
+    }
+    .result.error {
+      display: block;
+      background: rgba(255, 107, 107, 0.15);
+      border: 1px solid rgba(255, 107, 107, 0.4);
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .loading-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .accordion-header {
+      padding: 14px 0;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .accordion-header::after {
+      content: "+";
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.3s;
+    }
+    .accordion.open .accordion-header::after { transform: rotate(45deg); }
+    .accordion-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .accordion.open .accordion-body { max-height: 300px; }
+    .accordion-inner {
+      padding: 16px 0;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .url-mask {
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .privacy {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 20px;
+    }
+    .version {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 24px;
+      padding-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <a href="./index.html" style="position:absolute;left:20px;top:24px;color:var(--text-muted);font-size:14px;text-decoration:none">← 返回</a>
+      <h1>連線設定</h1>
+      <p class="sub">貼上你在 Step 8 拿到的「網頁應用程式網址」</p>
+    </header>
+
+    <div class="card">
+      <label class="label" for="apiUrl">你的網頁應用程式網址</label>
+      <textarea id="apiUrl" placeholder="https://script.google.com/macros/s/xxxxx/exec" rows="3"></textarea>
+      <p class="hint">只要貼這個就好，其他不用動</p>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="testBtn" onclick="testConnection()">測試連線</button>
+        <button class="btn btn-primary" id="saveBtn" onclick="saveAndEnable()" disabled>儲存並啟用</button>
+      </div>
+
+      <div class="result" id="result"></div>
+    </div>
+
+    <div class="card">
+      <div class="accordion" id="advancedAccordion">
+        <div class="accordion-header" onclick="toggleAdvanced()">進階設定</div>
+        <div class="accordion-body">
+          <div class="accordion-inner">
+            <p class="label">目前網址</p>
+            <p class="url-mask" id="currentUrlMask">尚未設定</p>
+            <p class="label" style="margin-top:12px">最後測試時間</p>
+            <p id="lastTestTime">-</p>
+            <button class="btn btn-secondary" style="margin-top:16px" onclick="clearSettings()">清除設定（回到預設）</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="privacy">你的網址只存在你自己的手機／瀏覽器，不會上傳到任何伺服器。</p>
+    <p class="version">v1.0</p>
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'notebook_api_base_url';
+    const TEST_KEY = 'notebook_api_last_test';
+    const DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbwSqmHIvJoI8Vk-w2fkY_Ehu7DXhmKg5toCDxoivB6aBVgUTgKD96DHzIqELFIQ8kvy6A/exec';
+    const PLACEHOLDER = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+
+    const apiUrlEl = document.getElementById('apiUrl');
+    const testBtn = document.getElementById('testBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const resultEl = document.getElementById('result');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    let lastTestOk = false;
+
+    // Load saved URL
+    function init() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        apiUrlEl.value = saved;
+      }
+      updateAdvanced();
+    }
+
+    function getUrl() {
+      return (apiUrlEl.value || '').trim().replace(/\s+$/, '');
+    }
+
+    function showLoading(show) {
+      loadingOverlay.classList.toggle('show', show);
+    }
+
+    async function testConnection() {
+      const url = getUrl();
+      resultEl.className = 'result';
+      resultEl.textContent = '';
+      resultEl.style.display = 'none';
+
+      if (!url) {
+        resultEl.className = 'result error';
+        resultEl.textContent = '請先貼上連線網址';
+        resultEl.style.display = 'block';
+        return;
+      }
+      if (!url.endsWith('/exec')) {
+        resultEl.className = 'result error';
+        resultEl.textContent = '網址看起來不完整，請確認結尾是 /exec';
+        resultEl.style.display = 'block';
+        return;
+      }
+
+      showLoading(true);
+      lastTestOk = false;
+
+      try {
+        const testUrl = `${url}?action=items&status=active&type=todo`;
+        const res = await fetch(testUrl);
+        const text = await res.text();
+
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          throw new Error('無法解析回應，請確認已在 Google 那邊完成部署');
+        }
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        if (res.status !== 200) {
+          throw new Error('連線失敗，HTTP ' + res.status);
+        }
+
+        if (!('items' in data)) {
+          throw new Error('回應格式不符');
+        }
+
+        lastTestOk = true;
+        resultEl.className = 'result success';
+        resultEl.textContent = '✅ 連線成功！已讀到你google sheets';
+        resultEl.style.display = 'block';
+        saveBtn.disabled = false;
+
+        localStorage.setItem(TEST_KEY, JSON.stringify({
+          timestamp: Date.now(),
+          ok: true,
+          message: '連線成功'
+        }));
+        updateAdvanced();
+
+      } catch (err) {
+        lastTestOk = false;
+        resultEl.className = 'result error';
+        let msg = err.message || '連線失敗';
+        if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+          msg = '連線失敗，可能是你尚未在 Google 那邊完成「部署」。如果你是用 IG/LINE 內建瀏覽器打開，建議改用 Safari 或 Chrome。';
+        }
+        resultEl.textContent = '❌ ' + msg;
+        resultEl.style.display = 'block';
+        saveBtn.disabled = true;
+
+        localStorage.setItem(TEST_KEY, JSON.stringify({
+          timestamp: Date.now(),
+          ok: false,
+          message: msg
+        }));
+        updateAdvanced();
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function saveAndEnable() {
+      if (!lastTestOk) {
+        alert('請先測試連線成功後再儲存');
+        return;
+      }
+
+      const url = getUrl();
+      if (!url) {
+        alert('請先貼上連線網址');
+        return;
+      }
+
+      localStorage.setItem(STORAGE_KEY, url);
+      resultEl.className = 'result success';
+      resultEl.innerHTML = '✅ 已啟用！<br><a href="./index.html" class="btn btn-link" style="display:inline-block;margin-top:8px">返回記事本</a>';
+      resultEl.style.display = 'block';
+      saveBtn.disabled = true;
+      updateAdvanced();
+    }
+
+    function toggleAdvanced() {
+      document.getElementById('advancedAccordion').classList.toggle('open');
+    }
+
+    function updateAdvanced() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      const maskEl = document.getElementById('currentUrlMask');
+      const timeEl = document.getElementById('lastTestTime');
+
+      if (saved) {
+        const masked = saved.length > 30
+          ? saved.slice(0, 20) + '...' + saved.slice(-15)
+          : saved;
+        maskEl.textContent = masked;
+      } else {
+        maskEl.textContent = '尚未設定（使用預設）';
+      }
+
+      try {
+        const test = JSON.parse(localStorage.getItem(TEST_KEY) || '{}');
+        if (test.timestamp) {
+          const d = new Date(test.timestamp);
+          timeEl.textContent = d.toLocaleString('zh-TW');
+        } else {
+          timeEl.textContent = '-';
+        }
+      } catch (e) {
+        timeEl.textContent = '-';
+      }
+    }
+
+    function clearSettings() {
+      if (!confirm('確定要清除設定嗎？將回到預設網址。')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(TEST_KEY);
+      apiUrlEl.value = '';
+      lastTestOk = false;
+      saveBtn.disabled = true;
+      resultEl.className = 'result';
+      resultEl.textContent = '';
+      resultEl.style.display = 'none';
+      updateAdvanced();
+    }
+
+    init();
+  </script>
+</body>
+</html>

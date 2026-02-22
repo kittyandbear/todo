@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="Couple Shared Memory - Editor App" />
+  <meta name="theme-color" content="#0f0f0f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="待辦清單" />
+  <link rel="icon" type="image/png" href="images/t3.png" />
+  <link rel="apple-touch-icon" href="images/t3.png" />
+  <link rel="manifest" href="manifest.json" />
+  <title>待辦清單</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      background: #0f0f0f;
+      color: #f5f5f5;
+      padding-bottom: 100px;
+      touch-action: pan-y;
+    }
+
+    /* iOS PWA safe-area support for body */
+    .is-standalone body {
+      padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Tabs */
+    .tabs {
+      display: -webkit-flex; /* Fallback for older iOS */
+      display: flex;
+      padding: 16px;
+      padding-left: 12px; /* Account for negative margin */
+      padding-right: 12px;
+      position: sticky;
+      top: 0;
+      background: #0f0f0f;
+      z-index: 10;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    /* Stable spacing between tabs */
+    .tabs .tab {
+      margin-left: 4px;
+      margin-right: 4px;
+    }
+
+    .tabs .tab + .tab {
+      margin-left: 4px;
+    }
+
+    /* iOS PWA safe-area support */
+    .is-standalone .tabs {
+      padding-top: calc(env(safe-area-inset-top, 0px) + 16px);
+    }
+
+    .tab {
+      -webkit-flex: 1; /* Fallback for older iOS */
+      flex: 1;
+      text-align: center;
+      padding: 14px 0; /* Increased to ensure ≥ 44px touch target */
+      min-height: 44px; /* iOS minimum touch target */
+      display: -webkit-flex; /* Fallback for older iOS */
+      display: flex;
+      -webkit-align-items: center; /* Fallback for older iOS */
+      align-items: center;
+      -webkit-justify-content: center; /* Fallback for older iOS */
+      justify-content: center;
+      border-radius: 999px;
+      background: #2a2a2a;
+      opacity: 0.5;
+      cursor: pointer;
+      font-size: 15px;
+      -webkit-transition: all 0.2s ease; /* Fallback for older iOS */
+      transition: all 0.2s ease;
+    }
+
+    /* Stable spacing between tab icon and text */
+    .tab .tab-icon {
+      margin-right: 6px;
+    }
+
+    .tab-icon {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
+
+    .tab.active {
+      background: #fff;
+      color: #111;
+      opacity: 1;
+      font-weight: 600;
+    }
+
+    /* List */
+    .list {
+      padding: 8px 16px;
+    }
+
+    .item-wrapper {
+      position: relative;
+      margin: 0; /* Reset margin */
+      overflow: hidden;
+      border-radius: 14px;
+      touch-action: pan-y;
+    }
+
+    /* Stable spacing between item wrappers using sibling selector */
+    .item-wrapper + .item-wrapper {
+      margin-top: 16px; /* Stable, suitable for iPad dashboard */
+    }
+
+    .delete-btn {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 80px;
+      background: #ff5c5c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #fff;
+      z-index: 1;
+      cursor: pointer;
+    }
+
+    .item {
+      background: #1e1e1e;
+      padding: 20px 24px; /* Increased padding for better readability on old screens */
+      display: -webkit-flex; /* Fallback for older iOS */
+      display: flex;
+      -webkit-align-items: center; /* Fallback for older iOS */
+      align-items: center;
+      transform: translateX(0);
+      -webkit-transition: -webkit-transform 0.2s ease; /* Fallback for older iOS */
+      transition: transform 0.2s ease;
+      position: relative;
+      z-index: 2;
+      cursor: pointer;
+    }
+
+    /* Stable spacing between item children */
+    .item > *:not(:last-child) {
+      margin-right: 12px;
+    }
+
+    .checkbox {
+      width: 24px;
+      height: 24px;
+      border: 2px solid #666;
+      border-radius: 6px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .checkbox.checked {
+      background: #5fd39c;
+      border-color: #5fd39c;
+    }
+
+    .checkbox.checked::after {
+      content: '✓';
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .item-content {
+      -webkit-flex: 1; /* Fallback for older iOS */
+      flex: 1;
+      display: -webkit-flex; /* Fallback for older iOS */
+      display: flex;
+      -webkit-flex-direction: column; /* Fallback for older iOS */
+      flex-direction: column;
+    }
+
+    /* Stable spacing between item-content children */
+    .item-content > *:not(:last-child) {
+      margin-bottom: 8px; /* Increased from 6px for better readability */
+    }
+
+    .text {
+      font-size: 16px;
+      line-height: 1.5; /* Increased from 1.4 for better readability */
+    }
+
+    .done {
+      opacity: 0.4;
+      text-decoration: line-through;
+    }
+
+    .item-meta {
+      display: -webkit-flex; /* Fallback for older iOS */
+      display: flex;
+      -webkit-align-items: center; /* Fallback for older iOS */
+      align-items: center;
+      -webkit-justify-content: space-between; /* Fallback for older iOS */
+      justify-content: space-between;
+      -webkit-flex-wrap: wrap; /* Fallback for older iOS */
+      flex-wrap: wrap;
+    }
+
+    /* Stable spacing between item-meta children */
+    .item-meta > *:not(:last-child) {
+      margin-right: 8px;
+    }
+
+    /* Priority badge */
+    .priority {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 500;
+    }
+
+    /* Assignee images */
+    .assignee-images {
+      display: -webkit-flex; /* Fallback for older iOS */
+      display: flex;
+      -webkit-align-items: center; /* Fallback for older iOS */
+      align-items: center;
+      margin-left: auto;
+    }
+
+    /* Stable spacing between assignee images */
+    .assignee-images > *:not(:last-child) {
+      margin-right: 4px;
+    }
+
+    .assignee-img {
+      width: 30px;
+      height: 30px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .p-high { background: #ff6b6b; color: #fff; }
+    .p-mid { background: #f5b971; color: #111; }
+    .p-low { background: #7bdff2; color: #111; }
+
+    /* Bottom actions: More (left) + Add (center) */
+    .bottom-actions {
+      position: fixed;
+      bottom: 24px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 24px;
+      z-index: 100;
+    }
+
+    .add-btn {
+      background: #fff;
+      color: #111;
+      border-radius: 999px;
+      padding: 16px 32px;
+      font-size: 18px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s ease;
+    }
+
+    .add-btn:active {
+      transform: scale(0.95);
+    }
+
+    .add-btn.hidden {
+      display: none;
+    }
+
+    /* 左下角半圓形「更多」按鈕（左側貼齊左邊） */
+    .more-btn {
+      position: fixed;
+      bottom: 24px;
+      left: 0;
+      width: 36px;
+      height: 52px;
+      background: #2a2a2a;
+      color: #f5f5f5;
+      border: none;
+      border-radius: 0 26px 26px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      z-index: 101;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .more-btn:active {
+      transform: scale(0.95);
+    }
+
+    .more-btn.open {
+      background: #3a3a3a;
+    }
+
+    /* iOS PWA safe-area for more button */
+    .is-standalone .more-btn {
+      bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* 更多選單（考慮 safe-area） */
+    .more-menu {
+      position: fixed;
+      bottom: 84px;
+      left: 8px;
+      background: #2a2a2a;
+      border-radius: 12px;
+      padding: 8px 0;
+      min-width: 140px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      z-index: 102;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .more-menu.show {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0);
+    }
+
+    .is-standalone .more-menu {
+      bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .more-menu-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      color: #f5f5f5;
+      text-decoration: none;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .more-menu-item:hover,
+    .more-menu-item:active {
+      background: #3a3a3a;
+    }
+
+    .more-menu-item svg {
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    /* 更多選單遮罩（點擊關閉） */
+    .more-menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 101;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .more-menu-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* Bottom sheet */
+    .sheet-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .sheet-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .sheet {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: -100%;
+      background: #1a1a1a;
+      border-radius: 20px 20px 0 0;
+      padding: 24px;
+      transition: bottom 0.3s ease;
+      z-index: 201;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .sheet.show {
+      bottom: 0;
+    }
+
+    .sheet-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .sheet-field {
+      margin-bottom: 16px;
+    }
+
+    .sheet-label {
+      display: block;
+      font-size: 14px;
+      opacity: 0.7;
+      margin-bottom: 8px;
+    }
+
+    .sheet input,
+    .sheet select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2a2a2a;
+      background: #222;
+      color: #f5f5f5;
+      font-size: 16px;
+    }
+
+    .sheet input:focus,
+    .sheet select:focus {
+      outline: none;
+      border-color: #4da3ff;
+    }
+
+    .sheet-buttons {
+      display: -webkit-flex; /* Fallback for older iOS */
+      display: flex;
+      margin-top: 24px;
+      margin-left: -6px;
+      margin-right: -6px;
+    }
+
+    /* Stable spacing between sheet buttons */
+    .sheet-buttons > * {
+      margin-left: 6px;
+      margin-right: 6px;
+    }
+
+    .sheet-btn {
+      flex: 1;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .sheet-btn:active {
+      transform: scale(0.98);
+    }
+
+    .sheet-btn-primary {
+      background: #fff;
+      color: #111;
+    }
+
+    .sheet-btn-secondary {
+      background: #2a2a2a;
+      color: #f5f5f5;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      opacity: 0.5;
+      font-size: 16px;
+    }
+
+    /* 尚未設定連線時，前往設定按鈕區塊使用 100% 透明度 */
+    .empty-state.no-api {
+      opacity: 1;
+    }
+
+    .empty-state-image {
+      display: block;
+      margin: 20px auto 0;
+      max-width: 200px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px 20px;
+      opacity: 0.6;
+      font-size: 16px;
+    }
+
+    /* Full screen loading overlay */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: -webkit-flex; /* Fallback for older iOS */
+      display: flex;
+      -webkit-flex-direction: column; /* Fallback for older iOS */
+      flex-direction: column;
+      -webkit-align-items: center; /* Fallback for older iOS */
+      align-items: center;
+      -webkit-justify-content: center; /* Fallback for older iOS */
+      justify-content: center;
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      -webkit-transition: opacity 0.2s ease; /* Fallback for older iOS */
+      transition: opacity 0.2s ease;
+    }
+
+    /* Stable spacing between loading overlay children */
+    .loading-overlay > *:not(:last-child) {
+      margin-bottom: 20px;
+    }
+
+    .loading-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .loading-top-image {
+      width: auto;
+      height: auto;
+      max-width: 200px;
+      max-height: 200px;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Swipe animation */
+    .item-wrapper.swiping .item {
+      transition: none;
+    }
+
+    /* PWA 加入主畫面提示 Sheet */
+    .pwa-prompt-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 250;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .pwa-prompt-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .pwa-prompt-sheet {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: -100%;
+      background: #fff;
+      color: #111;
+      border-radius: 20px 20px 0 0;
+      padding: 24px;
+      padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+      transition: bottom 0.3s ease;
+      z-index: 251;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .pwa-prompt-sheet.show {
+      bottom: 0;
+    }
+
+    .pwa-prompt-header {
+      position: relative;
+      text-align: center;
+      padding-top: 8px;
+    }
+
+    .pwa-prompt-close {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      color: #666;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .pwa-prompt-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 16px;
+      border-radius: 16px;
+      object-fit: contain;
+    }
+
+    .pwa-prompt-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    .pwa-prompt-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .pwa-prompt-step {
+      display: flex;
+      align-items: center;
+      padding: 14px 18px;
+      background: #f5f5f5;
+      border-radius: 12px;
+      font-size: 15px;
+      gap: 12px;
+    }
+
+    .pwa-prompt-step-num {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      background: #111;
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .pwa-prompt-step-text {
+      flex: 1;
+    }
+
+    .pwa-prompt-step-text .pwa-step-icon {
+      width: 20px;
+      height: 20px;
+      vertical-align: middle;
+      display: inline-block;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="tabs">
+    <div class="tab active" data-tab="todo">
+      <img src="images/t1.png" alt="" class="tab-icon" />
+      待辦事項
+    </div>
+    <div class="tab" data-tab="shopping">
+      <img src="images/t2.png" alt="" class="tab-icon" />
+      採買清單
+    </div>
+    <div class="tab" data-tab="done">
+      <img src="images/t3.png" alt="" class="tab-icon" />
+      已完成
+    </div>
+  </div>
+
+  <div class="list" id="list">
+    <div class="loading">載入中...</div>
+  </div>
+
+  <button class="more-btn" id="moreBtn" title="更多" onclick="toggleMoreMenu()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg>
+  </button>
+
+  <div class="bottom-actions">
+    <button class="add-btn" id="addBtn" onclick="openSheet()">＋ 新增</button>
+  </div>
+
+  <!-- 更多選單 -->
+  <div class="more-menu-overlay" id="moreMenuOverlay" onclick="closeMoreMenu()"></div>
+  <div class="more-menu" id="moreMenu">
+    <a href="settings.html" class="more-menu-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      設定
+    </a>
+    <a href="install.html" class="more-menu-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      關於
+    </a>
+  </div>
+
+  <!-- PWA 加入主畫面提示 -->
+  <div class="pwa-prompt-overlay" id="pwaPromptOverlay" onclick="closePwaPrompt()"></div>
+  <div class="pwa-prompt-sheet" id="pwaPromptSheet">
+    <div class="pwa-prompt-header">
+      <button type="button" class="pwa-prompt-close" onclick="closePwaPrompt()" aria-label="關閉">×</button>
+      <img src="images/t3.png" alt="" class="pwa-prompt-icon" />
+      <div class="pwa-prompt-title">加入主畫面以獲得更好的使用體驗。</div>
+      <div class="pwa-prompt-steps" id="pwaPromptSteps"></div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <img src="images/loading2.png" alt="" class="loading-top-image" />
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- Bottom Sheet -->
+  <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+  <div class="sheet" id="sheet">
+    <div class="sheet-title">新增項目</div>
+    
+    <div class="sheet-field">
+      <label class="sheet-label">內容 *</label>
+      <input id="newText" type="text" placeholder="要記錄的事情" />
+    </div>
+
+    <div class="sheet-field">
+      <label class="sheet-label">類型 *</label>
+      <select id="newType" onchange="onTypeChange()">
+        <option value="todo">待辦事項</option>
+        <option value="shopping">採買清單</option>
+      </select>
+    </div>
+
+    <div class="sheet-field" id="assigneeField">
+      <label class="sheet-label">負責人 *</label>
+      <select id="newAssignee" required>
+        <option value="熊熊" selected>熊熊</option>
+        <option value="貓貓">貓貓</option>
+        <option value="熊熊＆貓貓">熊熊＆貓貓</option>
+      </select>
+    </div>
+
+    <div class="sheet-field">
+      <label class="sheet-label">優先級 *</label>
+      <select id="newPriority">
+        <option value="high">🔥 緊急</option>
+        <option value="mid" selected>😆 還行</option>
+        <option value="low">⛄️ 不急</option>
+      </select>
+    </div>
+
+    <div class="sheet-buttons">
+      <button class="sheet-btn sheet-btn-secondary" onclick="closeSheet()">取消</button>
+      <button class="sheet-btn sheet-btn-primary" onclick="addItem()">新增</button>
+    </div>
+  </div>
+
+  <script>
+    // Configuration - 可由設定頁覆寫
+    const DEFAULT_API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwSqmHIvJoI8Vk-w2fkY_Ehu7DXhmKg5toCDxoivB6aBVgUTgKD96DHzIqELFIQ8kvy6A/exec';
+    const PLACEHOLDER_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+    function getApiBaseUrl() {
+      const saved = localStorage.getItem('notebook_api_base_url');
+      if (saved && saved.trim() && saved !== PLACEHOLDER_URL) return saved.trim();
+      // 未設定時不回傳預設值，讓所有 tab 都顯示「尚未設定連線」
+      return '';
+    }
+    // State
+    let currentTab = 'todo';
+    let items = [];
+    let startX = 0;
+    let currentSwipeId = null;
+    const CACHE_KEY = 'editor_items_cache';
+    const CACHE_TIMESTAMP_KEY = 'editor_cache_timestamp';
+    const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
+
+    // Detect iOS PWA standalone mode
+    const isStandalone =
+      window.navigator.standalone === true ||
+      window.matchMedia('(display-mode: standalone)').matches;
+    
+    document.documentElement.classList.toggle('is-standalone', isStandalone);
+
+    // PWA 加入主畫面說明（依瀏覽器）
+    const PWA_STEPS = {
+      safari: [
+        '點擊底部的「<img src="images/ios_share.svg" alt="分享" class="pwa-step-icon">」分享按鈕',
+        '選擇「加入主畫面」',
+        '點擊右上角「加入」'
+      ],
+      chrome: [
+        '點擊右上角「⋮」選單',
+        '選擇「新增至主畫面」或「安裝應用程式」',
+        '點擊「新增」或「安裝」'
+      ],
+      other: [
+        '開啟瀏覽器選單',
+        '尋找「加入主畫面」或「安裝」選項',
+        '依提示完成加入'
+      ]
+    };
+
+    function getPwaBrowserType() {
+      const ua = navigator.userAgent;
+      const isIOS = /iPhone|iPad|iPod/.test(ua);
+      const isAndroid = /Android/i.test(ua);
+      const isChrome = /Chrome/i.test(ua) && !/Edge|Edg/i.test(ua);
+      if (isIOS) return 'safari';  // iOS 上 Safari 與 Chrome 皆用分享鈕加入主畫面
+      if (isAndroid && isChrome) return 'chrome';
+      return 'other';
+    }
+
+    function renderPwaSteps() {
+      const container = document.getElementById('pwaPromptSteps');
+      if (!container) return;
+      const type = getPwaBrowserType();
+      const steps = PWA_STEPS[type] || PWA_STEPS.other;
+      container.innerHTML = steps.map((text, i) => `
+        <div class="pwa-prompt-step">
+          <span class="pwa-prompt-step-num">${i + 1}</span>
+          <span class="pwa-prompt-step-text">${text}</span>
+        </div>
+      `).join('');
+    }
+
+    function showPwaPrompt() {
+      if (isStandalone) return;
+      if (sessionStorage.getItem('pwa_prompt_dismissed')) return;
+      renderPwaSteps();
+      document.getElementById('pwaPromptOverlay').classList.add('show');
+      document.getElementById('pwaPromptSheet').classList.add('show');
+    }
+
+    function closePwaPrompt() {
+      document.getElementById('pwaPromptOverlay').classList.remove('show');
+      document.getElementById('pwaPromptSheet').classList.remove('show');
+      sessionStorage.setItem('pwa_prompt_dismissed', '1');
+    }
+
+    // DOM elements
+    const list = document.getElementById('list');
+    const sheet = document.getElementById('sheet');
+    const sheetOverlay = document.getElementById('sheetOverlay');
+    const newText = document.getElementById('newText');
+    const newType = document.getElementById('newType');
+    const newAssignee = document.getElementById('newAssignee');
+    const newPriority = document.getElementById('newPriority');
+    const assigneeField = document.getElementById('assigneeField');
+    const tabs = document.querySelectorAll('.tab');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const loadingTopImage = loadingOverlay.querySelector('.loading-top-image');
+
+    // Force reload APNG images to restart animation
+    function reloadLoadingImages() {
+      // Reload loading2.png in overlay
+      if (loadingTopImage) {
+        const timestamp = Date.now();
+        loadingTopImage.src = `images/loading2.png?t=${timestamp}`;
+      }
+    }
+
+    // 根據 API 網址是否已設定，顯示或隱藏新增按鈕
+    function updateAddButtonVisibility() {
+      const baseUrl = getApiBaseUrl();
+      const addBtn = document.getElementById('addBtn');
+      if (addBtn) {
+        if (!baseUrl || baseUrl === PLACEHOLDER_URL) {
+          addBtn.classList.add('hidden');
+        } else {
+          addBtn.classList.remove('hidden');
+        }
+      }
+    }
+
+    // Initialize
+    function init() {
+      // Load cached data first
+      loadCachedData();
+      // 根據 API 設定顯示/隱藏新增按鈕
+      updateAddButtonVisibility();
+      // 若未加入主畫面，顯示 PWA 提示（延遲顯示避免干擾載入）
+      setTimeout(showPwaPrompt, 500);
+      
+      // Set up tabs
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentTab = tab.dataset.tab;
+          // Show loading overlay when switching tabs
+          reloadLoadingImages(); // Reload APNG before showing
+          loadingOverlay.classList.add('show');
+          // Fetch fresh data when switching tabs
+          fetchItems();
+        });
+      });
+
+      // Initial fetch
+      fetchItems();
+    }
+
+    // Load cached data
+    function loadCachedData() {
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+        
+        if (cached && timestamp && Date.now() - parseInt(timestamp) < CACHE_DURATION) {
+          items = JSON.parse(cached);
+          render();
+        }
+      } catch (e) {
+        console.error('Failed to load cache:', e);
+      }
+    }
+
+    // Fetch items from API
+    async function fetchItems() {
+      const baseUrl = getApiBaseUrl();
+      if (!baseUrl || baseUrl === PLACEHOLDER_URL) {
+        items = [];
+        list.innerHTML = '<div class="empty-state no-api">尚未設定連線<br><a href="settings.html" style="display:inline-block;margin-top:12px;padding:12px 24px;background:#fff;color:#111;border-radius:999px;font-weight:600;text-decoration:none">前往設定</a></div>';
+        loadingOverlay.classList.remove('show');
+        return;
+      }
+
+      try {
+        let url = `${getApiBaseUrl()}?action=items`;
+        
+        if (currentTab === 'done') {
+          url += '&status=done';
+        } else {
+          url += `&status=active&type=${currentTab}`;
+        }
+
+        console.log('Fetching items from:', url);
+        const response = await fetch(url);
+        console.log('Response status:', response.status);
+        
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+        
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('Failed to parse JSON:', parseError);
+          console.error('Response was:', responseText);
+          throw new Error('無法解析伺服器回應');
+        }
+        
+        if (data.error) {
+          console.error('API error:', data.error);
+          throw new Error(data.error);
+        }
+        
+        if (data.items) {
+          items = data.items;
+          localStorage.setItem(CACHE_KEY, JSON.stringify(items));
+          localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+          render();
+        } else {
+          console.warn('Unexpected response format:', data);
+          items = [];
+          render();
+        }
+        
+        // Remove loading overlay after data is loaded
+        setTimeout(() => {
+          loadingOverlay.classList.remove('show');
+        }, 300);
+      } catch (error) {
+        console.error('Failed to fetch items:', error);
+        loadingOverlay.classList.remove('show');
+        if (items.length > 0) {
+          render(); // Show cached data
+        } else {
+          list.innerHTML = '<div class="empty-state">載入失敗，請檢查網路連線<br>錯誤：' + (error.message || '未知錯誤') + '</div>';
+        }
+      }
+    }
+
+    // Render list
+    function render() {
+      list.innerHTML = '';
+
+      let filtered = items.filter(item => {
+        if (currentTab === 'done') {
+          return item.status === 'done';
+        } else {
+          return item.type === currentTab && item.status === 'active';
+        }
+      });
+
+      // Sort
+      if (currentTab === 'done') {
+        // Done list: updatedAt desc
+        filtered.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      } else {
+        // Active lists: priority asc (high first), then updatedAt desc
+        const priorityOrder = { high: 1, mid: 2, low: 3 };
+        filtered.sort((a, b) => {
+          const priorityDiff = (priorityOrder[a.priority] || 99) - (priorityOrder[b.priority] || 99);
+          if (priorityDiff !== 0) return priorityDiff;
+          return (b.updatedAt || 0) - (a.updatedAt || 0);
+        });
+      }
+
+      if (filtered.length === 0) {
+        const timestamp = Date.now();
+        list.innerHTML = `
+          <div class="empty-state">
+            目前沒有項目
+            <img src="images/loading.png?t=${timestamp}" alt="" class="empty-state-image" />
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const wrap = document.createElement('div');
+        wrap.className = 'item-wrapper';
+        wrap.dataset.id = item.id;
+
+        const priorityLabel = {
+          high: '緊急',
+          mid: '還行',
+          low: '不急'
+        }[item.priority] || item.priority;
+
+        const isDone = item.status === 'done';
+        const assignee = item.assignee || '';
+
+        // Generate assignee images HTML
+        let assigneeHtml = '';
+        if (assignee) {
+          if (assignee === '熊熊＆貓貓' || assignee === '熊熊&貓貓') {
+            assigneeHtml = `
+              <div class="assignee-images">
+                <img src="images/bear.png" alt="熊熊" class="assignee-img" />
+                <img src="images/cat.png" alt="貓貓" class="assignee-img" />
+              </div>
+            `;
+          } else if (assignee === '熊熊') {
+            assigneeHtml = `
+              <div class="assignee-images">
+                <img src="images/bear.png" alt="熊熊" class="assignee-img" />
+              </div>
+            `;
+          } else if (assignee === '貓貓') {
+            assigneeHtml = `
+              <div class="assignee-images">
+                <img src="images/cat.png" alt="貓貓" class="assignee-img" />
+              </div>
+            `;
+          }
+        }
+
+        wrap.innerHTML = `
+          <div class="delete-btn" onclick="archiveItem('${item.id}')">刪除</div>
+          <div class="item">
+            <div class="checkbox ${isDone ? 'checked' : ''}" onclick="toggleStatus('${item.id}')"></div>
+            <div class="item-content">
+              <div class="text ${isDone ? 'done' : ''}">${escapeHtml(item.text)}</div>
+              <div class="item-meta">
+                <div class="priority p-${item.priority}">${priorityLabel}</div>
+                ${assigneeHtml}
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Swipe to delete
+        const itemEl = wrap.querySelector('.item');
+        let startX = 0;
+        let currentX = 0;
+
+        itemEl.addEventListener('touchstart', (e) => {
+          startX = e.touches[0].clientX;
+          wrap.classList.add('swiping');
+        });
+
+        itemEl.addEventListener('touchmove', (e) => {
+          currentX = e.touches[0].clientX - startX;
+          if (currentX < 0 && !isDone) {
+            itemEl.style.transform = `translateX(${Math.max(currentX, -80)}px)`;
+          }
+        });
+
+        itemEl.addEventListener('touchend', () => {
+          wrap.classList.remove('swiping');
+          if (currentX < -60 && !isDone) {
+            itemEl.style.transform = 'translateX(-80px)';
+            currentSwipeId = item.id;
+          } else {
+            itemEl.style.transform = 'translateX(0)';
+            currentSwipeId = null;
+          }
+        });
+
+        list.appendChild(wrap);
+      });
+    }
+
+    // Toggle item status
+    async function toggleStatus(id) {
+      const item = items.find(i => i.id === id);
+      if (!item) return;
+
+      const newStatus = item.status === 'active' ? 'done' : 'active';
+      
+      // Show loading overlay
+      reloadLoadingImages(); // Reload APNG before showing
+      loadingOverlay.classList.add('show');
+
+      try {
+        const formData = new FormData();
+        formData.append('payload', JSON.stringify({
+          action: 'update',
+          id: id,
+          status: newStatus
+        }));
+        
+        const response = await fetch(getApiBaseUrl(), {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          item.status = newStatus;
+          item.updatedAt = Date.now();
+          localStorage.setItem(CACHE_KEY, JSON.stringify(items));
+          render();
+          
+          // Remove loading overlay after a short delay
+          setTimeout(() => {
+            loadingOverlay.classList.remove('show');
+          }, 300);
+        } else {
+          loadingOverlay.classList.remove('show');
+          alert('更新失敗，請稍後再試');
+        }
+      } catch (error) {
+        console.error('Failed to update item:', error);
+        loadingOverlay.classList.remove('show');
+        alert('更新失敗，請稍後再試');
+      }
+    }
+
+    // Archive item
+    async function archiveItem(id) {
+      if (!confirm('確定要刪除這個項目嗎？')) return;
+
+      // Show loading overlay
+      reloadLoadingImages(); // Reload APNG before showing
+      loadingOverlay.classList.add('show');
+
+      try {
+        const formData = new FormData();
+        formData.append('payload', JSON.stringify({
+          action: 'archive',
+          id: id
+        }));
+        
+        const response = await fetch(getApiBaseUrl(), {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          items = items.filter(i => i.id !== id);
+          localStorage.setItem(CACHE_KEY, JSON.stringify(items));
+          render();
+          
+          // Remove loading overlay after a short delay
+          setTimeout(() => {
+            loadingOverlay.classList.remove('show');
+          }, 300);
+        } else {
+          loadingOverlay.classList.remove('show');
+          alert('刪除失敗，請稍後再試');
+        }
+      } catch (error) {
+        console.error('Failed to archive item:', error);
+        loadingOverlay.classList.remove('show');
+        alert('刪除失敗，請稍後再試');
+      }
+    }
+
+    // Open add sheet
+    function openSheet() {
+      sheet.classList.add('show');
+      sheetOverlay.classList.add('show');
+      // Reset form
+      newText.value = '';
+      // Set type based on current tab (todo or shopping)
+      if (currentTab === 'shopping') {
+        newType.value = 'shopping';
+      } else {
+        newType.value = 'todo';
+      }
+      newPriority.value = 'mid';
+      newAssignee.value = '熊熊'; // Default assignee
+      // assigneeField is always visible for both todo and shopping
+      // Don't auto-focus on any input field
+    }
+
+    // Close add sheet
+    function closeSheet() {
+      sheet.classList.remove('show');
+      sheetOverlay.classList.remove('show');
+      newText.value = '';
+      newType.value = 'todo';
+      newPriority.value = 'mid';
+      newAssignee.value = '熊熊'; // Reset to default
+    }
+
+    // Handle type change (no longer needed, but keeping for compatibility)
+    function onTypeChange() {
+      // assigneeField is always visible for both todo and shopping
+    }
+
+    // Add new item
+    async function addItem() {
+      const text = newText.value.trim();
+      if (!text) {
+        alert('請輸入內容');
+        return;
+      }
+
+      // Validate assignee (required)
+      if (!newAssignee.value) {
+        alert('請選擇負責人');
+        return;
+      }
+
+      const itemData = {
+        action: 'create',
+        text: text,
+        type: newType.value,
+        priority: newPriority.value,
+        assignee: newAssignee.value // Required field
+      };
+
+      // Show loading overlay
+      reloadLoadingImages(); // Reload APNG before showing
+      loadingOverlay.classList.add('show');
+      closeSheet(); // Close sheet immediately when loading starts
+
+      try {
+        console.log('Sending request:', itemData);
+        console.log('API URL:', getApiBaseUrl());
+        
+        // Use FormData to avoid CORS preflight issues
+        const formData = new FormData();
+        formData.append('payload', JSON.stringify(itemData));
+        
+        const response = await fetch(getApiBaseUrl(), {
+          method: 'POST',
+          body: formData
+        });
+
+        console.log('Response status:', response.status, response.statusText);
+        
+        // Get response text first to see what we're getting
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('Failed to parse JSON:', parseError);
+          console.error('Response was:', responseText);
+          loadingOverlay.classList.remove('show');
+          alert('伺服器回應格式錯誤，請檢查 Console');
+          return;
+        }
+
+        console.log('Parsed data:', data);
+
+        if (data.error) {
+          console.error('API error:', data.error);
+          loadingOverlay.classList.remove('show');
+          alert('新增失敗：' + data.error);
+          return;
+        }
+
+        if (data.success && data.item) {
+          items.push(data.item);
+          localStorage.setItem(CACHE_KEY, JSON.stringify(items));
+          
+          // Always switch to the correct tab based on item type
+          const targetTabType = data.item.type; // 'todo' or 'shopping'
+          const targetTab = document.querySelector(`[data-tab="${targetTabType}"]`);
+          
+          if (targetTab && currentTab !== targetTabType) {
+            // Switch to the correct tab
+            tabs.forEach(t => t.classList.remove('active'));
+            targetTab.classList.add('active');
+            currentTab = targetTabType;
+          }
+          
+          // Fetch fresh data and render
+          await fetchItems();
+          
+          // Remove loading overlay after a short delay
+          setTimeout(() => {
+            loadingOverlay.classList.remove('show');
+          }, 300);
+        } else {
+          console.error('Unexpected response format:', data);
+          loadingOverlay.classList.remove('show');
+          alert('新增失敗：回應格式不正確，請檢查 Console');
+        }
+      } catch (error) {
+        console.error('Failed to create item:', error);
+        console.error('Error details:', error.message, error.stack);
+        loadingOverlay.classList.remove('show');
+        alert('新增失敗：' + (error.message || '請稍後再試') + '\n請檢查 Console 查看詳細錯誤');
+      }
+    }
+
+    // Helper: Escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // 更多選單
+    function toggleMoreMenu() {
+      const menu = document.getElementById('moreMenu');
+      const overlay = document.getElementById('moreMenuOverlay');
+      const btn = document.getElementById('moreBtn');
+      const isOpen = menu.classList.contains('show');
+      if (isOpen) {
+        closeMoreMenu();
+      } else {
+        menu.classList.add('show');
+        overlay.classList.add('show');
+        btn.classList.add('open');
+      }
+    }
+
+    function closeMoreMenu() {
+      document.getElementById('moreMenu').classList.remove('show');
+      document.getElementById('moreMenuOverlay').classList.remove('show');
+      document.getElementById('moreBtn').classList.remove('open');
+    }
+
+    // Start app
+    init();
+  </script>
+</body>
+</html>
