@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="熊熊貓貓待辦清單APP｜設定與安裝教學" />
+  <title> 熊熊貓貓待辦清單APP｜設定與安裝教學 </title>
+  <style>
+    :root {
+      --bg: #faf8f5;
+      --card: #fff;
+      --text: #2d2d2d;
+      --text-muted: #6b6b6b;
+      --accent: #e8b4bc;
+      --accent-dark: #d4a0a8;
+      --success: #5fd39c;
+      --border: #eee;
+      --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 40px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: #c97b84; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    a[target="_blank"]::after { content: " ↗"; font-size: 0.8em; opacity: 0.7; }
+
+    /* Config - 集中管理連結（保留） */
+    .config { display: none; }
+    #config-sheet-url { content: attr(data-url); }
+    #config-feedback-url { content: attr(data-url); }
+    #config-settings-url { content: attr(data-url); }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 16px 64px;
+    }
+
+    /* Hero */
+    /* Hero 白色 banner 卡片 */
+    .hero-banner {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+    .hero-banner-img {
+      display: block;
+      width: 100%;
+      max-width: 200px;
+      margin: 0 auto 20px;
+      border-radius: 12px;
+    }
+    .hero {
+      text-align: center;
+      padding: 0;
+    }
+    .hero h1 {
+      font-size: 26px;
+      font-weight: 700;
+      margin: 0 0 12px;
+      color: var(--text);
+      line-height: 1.35;
+    }
+    .hero .sub {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin: 8px 0;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 14px 24px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.16s, box-shadow 0.16s, background 0.16s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: linear-gradient(135deg, #e8b4bc, #d4a0a8);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(212,160,168,0.4);
+    }
+    .btn-secondary {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .skip-setup-btn { margin-top: 16px; display: none; }
+
+    /* 快速導覽 2x2 卡片 */
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin: 8px 0 32px;
+    }
+    .nav-card {
+      position: relative;
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 16px 18px;
+      text-align: left;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .nav-card-action {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      font-size: 12px;
+      color: var(--accent-dark);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav-card-tall {
+      min-height: 100px;
+      padding: 22px 18px;
+    }
+    .nav-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+      border-color: #e3d0d4;
+    }
+    .nav-card-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-dark);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 4px;
+    }
+    .nav-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .nav-card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .nav-card-img {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      margin-top: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    /* 區塊標題 */
+    .section-title-main {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 32px 0 10px;
+      color: var(--text);
+    }
+    .section-intro {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin: 0 0 18px;
+    }
+
+    /* 左文右圖 layout */
+    .feature-section {
+      margin-bottom: 40px;
+    }
+    .feature-row {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      background: var(--card);
+      border-radius: 18px;
+      padding: 20px 20px 18px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    .feature-text {
+      flex: 3;
+      min-width: 0;
+    }
+    .feature-media {
+      flex: 2.2;
+      min-width: 0;
+    }
+    .feature-media:empty {
+      display: none;
+    }
+    .feature-media-full img {
+      width: 100%;
+    }
+
+    /* 步驟 1 合併大卡片 */
+    .step1-unified {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .step1-unified .step1-header {
+      flex: none;
+    }
+    .step-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 16px 0;
+    }
+    .step1-block {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .step1-block .feature-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .step1-block .feature-media {
+      flex: 2.5;
+      min-width: 0;
+    }
+    .step1-unified .step-tip {
+      margin-top: 12px;
+      margin-bottom: 0;
+    }
+    @media (max-width: 768px) {
+      .step1-block {
+        flex-direction: column;
+      }
+    }
+
+    /* 步驟 3 合併大卡片（同步驟 1 結構） */
+    .step3-unified {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .step3-unified .step3-header {
+      flex: none;
+    }
+    .step3-block {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .step3-block .feature-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .step3-block .feature-media {
+      flex: 2.5;
+      min-width: 0;
+    }
+    .step3-unified .step-tip {
+      margin-top: 12px;
+      margin-bottom: 0;
+    }
+    .step3-block .code-block {
+      margin: 0;
+    }
+    @media (max-width: 768px) {
+      .step3-block {
+        flex-direction: column;
+      }
+    }
+
+    /* 步驟 7 合併大卡片（同步驟 1 結構） */
+    .step7-unified {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .step7-unified .step7-header {
+      flex: none;
+    }
+    .step7-block {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .step7-block .feature-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .step7-block .feature-media {
+      flex: 2.5;
+      min-width: 0;
+    }
+    .step7-unified .step-tip {
+      margin-top: 12px;
+      margin-bottom: 0;
+    }
+    @media (max-width: 768px) {
+      .step7-block {
+        flex-direction: column;
+      }
+    }
+
+    /* 步驟 2-8：與步驟 1 相同比例，圖片較寬 */
+    #section-step1 .feature-row:not(.step1-unified) .feature-text {
+      flex: 1;
+    }
+    #section-step1 .feature-row:not(.step1-unified) .feature-media {
+      flex: 2.5;
+    }
+
+    /* 安裝任務（二）步驟 1-5：圖片區塊與任務一相同寬度 */
+    #section-step2 .feature-row .feature-text {
+      flex: 1;
+    }
+    #section-step2 .feature-row .feature-media {
+      flex: 2.5;
+    }
+
+    .step-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #fbeef0;
+      color: var(--accent-dark);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .feature-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+    .feature-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin: 0 0 10px;
+    }
+    .feature-text p {
+      font-size: 14px;
+      margin: 6px 0;
+      color: var(--text);
+    }
+    .feature-text p small {
+      color: var(--text-muted);
+    }
+    .step-tip {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .feature-media img,
+    .feature-media video {
+      width: 100%;
+      max-width: 100%;
+      display: block;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      margin-bottom: 10px;
+      background: #f5f5f5;
+    }
+
+    .media-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .media-grid-stack {
+      grid-template-columns: 1fr;
+    }
+    .media-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    /* Code / copy */
+    .copy-btn {
+      display: inline-block;
+      margin: 8px 0 10px;
+      padding: 9px 16px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .copy-btn:active { opacity: 0.9; }
+
+    .code-block {
+      background: #1e1e1e;
+      color: #e0e0e0;
+      padding: 14px;
+      border-radius: 10px;
+      font-family: "SF Mono", Monaco, monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      max-height: 260px;
+      overflow-y: auto;
+      margin-top: 4px;
+    }
+
+    /* Security */
+    .security {
+      background: linear-gradient(135deg, #f8f0f2, #f5e8eb);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 24px 0;
+    }
+    .security h3 { margin: 0 0 12px; font-size: 16px; }
+    .security p { margin: 0; font-size: 14px; color: var(--text-muted); }
+
+    /* FAQ */
+    .faq {
+      padding: 24px 0;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0 0 18px;
+      color: var(--text);
+    }
+    .faq-item {
+      background: var(--card);
+      border-radius: 12px;
+      margin-bottom: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+    }
+    .faq-q {
+      padding: 14px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+    }
+    .faq-q::after {
+      content: "+";
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+    }
+    .faq-item.open .faq-q::after { transform: rotate(45deg); }
+    .faq-a {
+      padding: 0 18px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease;
+    }
+    .faq-item.open .faq-a { max-height: 260px; }
+    .faq-a-inner {
+      padding: 0 0 14px;
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* Troubleshooting */
+    .trouble {
+      padding: 24px 0;
+    }
+    .trouble-item {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+    }
+    .trouble-symptom {
+      font-weight: 600;
+      color: #c97b84;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+    .trouble-fix {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 32px 12px 0;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    footer a { color: var(--text-muted); }
+
+    /* RWD */
+    @media (max-width: 768px) {
+      .hero-banner { padding: 20px; }
+      .hero-banner-img { max-width: 160px; margin-bottom: 16px; }
+      .hero h1 { font-size: 22px; }
+
+      .nav-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .feature-row {
+        flex-direction: column;
+        padding: 18px 16px 16px;
+      }
+      .feature-media img,
+      .feature-media video {
+        max-width: 100%;
+      }
+      .media-grid-2,
+      .media-grid-3 {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Config 區塊：集中管理 -->
+  <div class="config" id="config">
+    <span id="config-sheet-url" data-url="https://docs.google.com/spreadsheets/d/1_38-IQwS9Vj1iHzXWJAQ68WghhwBUvRGLVG8RobUDpg/copy">Sheet 範本</span>
+    <span id="config-feedback-url" data-url="https://forms.gle/65RiUZVL4Th8ia8WA">回饋表單</span>
+    <span id="config-settings-url" data-url="./settings.html">設定頁</span>
+  </div>
+
+  <div class="container">
+    <!-- Hero：白色 banner 卡片包裝 t4.png + 標題與說明 -->
+    <section class="hero-banner">
+      <img src="manual/t4.png" alt="" class="hero-banner-img" />
+      <div class="hero">
+        <h1>熊熊貓貓待辦清單APP｜設定與安裝教學</h1>
+        <p class="sub">本待辦清單使用 <strong>你自己的 Google Sheets</strong> 當資料庫</p>
+        <p class="sub">不用註冊、不用下載 APP、不用付費，資料只屬於你們 ❤️</p>
+        <p class="sub">整個流程大約 5–10 分鐘完成</p>
+        <a href="./settings.html" class="btn btn-secondary skip-setup-btn">我已經有連線網址了，直接設定</a>
+      </div>
+    </section>
+
+    <!-- 快速導覽 2x2 卡片 -->
+    <section class="nav-grid" aria-label="快速導覽">
+      <button class="nav-card nav-card-tall" data-target="#section-step1">
+        <span class="nav-card-action">查看 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        <div class="nav-card-label">安裝任務（ㄧ）</div>
+        <div class="nav-card-title">用Google Sheets 建立你們專屬的待辦清單「資料庫」</div>
+        <div class="nav-card-desc">🖥️ 用電腦完成設定</div>
+        <img src="manual/s1.png" alt="" class="nav-card-img" />
+      </button>
+      <button class="nav-card nav-card-tall" data-target="#section-step2">
+        <span class="nav-card-action">查看 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        <div class="nav-card-label">安裝任務（二）</div>
+        <div class="nav-card-title">APP 安裝與設定</div>
+        <div class="nav-card-desc">📱 用手機完成設定</div>
+        <img src="manual/s2.png" alt="" class="nav-card-img" />
+      </button>
+      <button class="nav-card" data-target="#section-faq">
+        <span class="nav-card-action">查看 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        <div class="nav-card-label">FAQ</div>
+        <div class="nav-card-title">常見問題</div>
+        <div class="nav-card-desc"></div>
+      </button>
+      <button class="nav-card" data-target="#section-trouble">
+        <span class="nav-card-action">查看 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        <div class="nav-card-label">Help</div>
+        <div class="nav-card-title">排錯指南</div>
+        <div class="nav-card-desc"></div>
+      </button>
+    </section>
+
+    <!-- 一、建立資料庫（左文右圖） -->
+    <section class="feature-section" id="section-step1">
+      <h2 class="section-title-main">安裝任務（ㄧ）建立你們專屬的待辦清單「資料庫」（建議用電腦完成）</h2>
+      <p class="section-intro">
+        這一步的目的只有一個：幫你們建立一份「只屬於你們的待辦清單」，之後手機 App 才知道資料要存在哪裡。<br>
+        不用懂程式，只要照著畫面點就好 👇
+      </p>
+
+      <!-- Row 1：步驟 1 合併為一張大卡片 -->
+      <div class="feature-row step1-unified" id="step1">
+        <div class="feature-text step1-header">
+          <div class="step-label">步驟 1</div>
+          <h3 class="feature-title">建立 Google Sheets 資料表</h3>
+          <p class="feature-sub"></p>
+          <p>1-1 透過範本建立辦清單資料表，點擊下方按鈕【複製待辦清單資料表】。</p>
+          <p>
+            <a href="https://docs.google.com/spreadsheets/d/1_38-IQwS9Vj1iHzXWJAQ68WghhwBUvRGLVG8RobUDpg/copy"
+               target="_blank"
+               class="btn btn-primary"
+            >
+              👉 點我【複製待辦清單資料表】
+            </a>
+          </p>
+        </div>
+
+        <hr class="step-divider" />
+
+        <div class="step1-block">
+          <div class="feature-text">
+            <p>1-2 畫面會出現「複製文件」，直接點擊藍色的【建立副本】。</p>
+          </div>
+          <div class="feature-media feature-media-full">
+            <img src="manual/01.png" alt="複製文件示意" />
+          </div>
+        </div>
+
+        <hr class="step-divider" />
+
+        <div class="step1-block">
+          <div class="feature-text">
+            <p>1-3 直接點擊藍色的【建立副本】。</p>
+          </div>
+          <div class="feature-media feature-media-full">
+            <img src="manual/01-1.png" alt="建立副本示意" />
+          </div>
+        </div>
+
+        <p class="step-tip">📌 小提醒：不用改名稱、不用選資料夾，這份表格會自動存到你的 Google 雲端硬碟。</p>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="feature-row" id="step2">
+        <div class="feature-text">
+          <div class="step-label">步驟 2</div>
+          <h3 class="feature-title">打開 Google Sheets 的「Apps Script」設定頁面</h3>
+          <p class="feature-sub">在剛剛複製好的 Google Sheets 中，點擊上方選單【擴充功能】→【Apps Script】。</p>
+        </div>
+        <div class="feature-media">
+          <img src="manual/02.png" alt="擴充功能 → Apps Script" />
+        </div>
+      </div>
+
+      <!-- Row 3：貼上程式碼（與步驟 1 相同大卡片 + divider 結構） -->
+      <div class="feature-row step3-unified" id="step3">
+        <div class="feature-text step3-header">
+          <div class="step-label">步驟 3</div>
+          <h3 class="feature-title">設定程式碼</h3>
+          <p class="feature-sub"></p>
+        </div>
+
+        <div class="step3-block">
+          <div class="feature-text">
+            <p>3-1 把原本編輯器中的程式碼清空。</p>
+          </div>
+          <div class="feature-media feature-media-full">
+            <img src="manual/04.png" alt="Apps Script 編輯器示意" />
+          </div>
+        </div>
+
+        <hr class="step-divider" />
+
+        <div class="step3-block">
+          <div class="feature-text">
+            <p>3-2 點擊下方「複製程式碼」按鈕，將程式碼貼回編輯器中。</p>
+            <button class="copy-btn" onclick="copyScript()">複製程式碼</button>
+          </div>
+          <div class="feature-media feature-media-full">
+            <div class="code-block" id="scriptCode">// Sheet configuration
+const SHEET_NAME = 'items';
+const HEADER_ROW = 1;
+
+// Column indices (0-based)
+const COL_ID = 0;
+const COL_TEXT = 1;
+const COL_TYPE = 2;
+const COL_SUBTYPE = 3;
+const COL_PRIORITY = 4;
+const COL_STATUS = 5;
+const COL_CREATED_AT = 6;
+const COL_UPDATED_AT = 7;
+const COL_DUE_DATE = 8;
+const COL_CREATED_BY = 9;
+const COL_NOTE = 10;
+const COL_ASSIGNEE = 11;
+
+// GET handler
+function doGet(e) {
+  try {
+    const action = e.parameter.action || '';
+    
+    if (action === 'items') {
+      return handleGetItems(e);
+    } else if (action === 'calendar') {
+      return handleGetCalendar(e);
+    } else {
+      return createResponse({ error: 'Invalid action' }, 400);
+    }
+  } catch (error) {
+    return createResponse({ error: error.toString() }, 500);
+  }
+}
+
+// POST handler
+function doPost(e) {
+  try {
+    let postData;
+    
+    // Handle FormData
+    if (e.parameter &amp;&amp; e.parameter.payload) {
+      postData = JSON.parse(e.parameter.payload);
+    }
+    // Handle JSON body
+    else if (e.postData &amp;&amp; e.postData.contents) {
+      postData = JSON.parse(e.postData.contents);
+    } else {
+      return createResponse({ error: 'No POST data received' }, 400);
+    }
+    
+    const action = postData.action || '';
+    
+    if (action === 'create') {
+      return handleCreateItem(postData);
+    } else if (action === 'update') {
+      return handleUpdateItem(postData);
+    } else if (action === 'archive') {
+      return handleArchiveItem(postData);
+    } else {
+      return createResponse({ error: 'Invalid action: ' + action }, 400);
+    }
+  } catch (error) {
+    return createResponse({ error: error.toString() }, 500);
+  }
+}
+
+// GET /items
+function handleGetItems(e) {
+  const sheet = getSheet();
+  const data = sheet.getDataRange().getValues();
+  const rows = data.slice(HEADER_ROW);
+  
+  let items = rows.map((row) =&gt; {
+    return {
+      id: row[COL_ID],
+      text: row[COL_TEXT],
+      type: row[COL_TYPE],
+      subtype: row[COL_SUBTYPE] || '',
+      priority: row[COL_PRIORITY],
+      status: row[COL_STATUS],
+      createdAt: row[COL_CREATED_AT],
+      updatedAt: row[COL_UPDATED_AT],
+      dueDate: row[COL_DUE_DATE] || '',
+      createdBy: row[COL_CREATED_BY] || '',
+      note: row[COL_NOTE] || '',
+      assignee: (row[COL_ASSIGNEE] !== undefined &amp;&amp; row[COL_ASSIGNEE] !== null) ? row[COL_ASSIGNEE] : ''
+    };
+  });
+  
+  // Filter by status
+  const status = e.parameter.status || 'active';
+  items = items.filter(item =&gt; item.status === status);
+  
+  // Filter by type if specified
+  if (e.parameter.type) {
+    items = items.filter(item =&gt; item.type === e.parameter.type);
+  }
+  
+  // Sort: priority (high -&gt; mid -&gt; low), then updatedAt desc
+  const priorityOrder = { high: 1, mid: 2, low: 3 };
+  items.sort((a, b) =&gt; {
+    const priorityDiff = (priorityOrder[a.priority] || 99) - (priorityOrder[b.priority] || 99);
+    if (priorityDiff !== 0) return priorityDiff;
+    return (b.updatedAt || 0) - (a.updatedAt || 0);
+  });
+  
+  return createResponse({ items: items });
+}
+
+// POST /items (create)
+function handleCreateItem(data) {
+  const sheet = getSheet();
+  const now = Date.now();
+  const id = 'it_' + now;
+  
+  const row = [
+    id,
+    data.text || '',
+    data.type || 'todo',
+    data.subtype || '',
+    data.priority || 'mid',
+    'active',
+    now,
+    now,
+    data.dueDate || '',
+    data.createdBy || '',
+    data.note || '',
+    data.assignee || ''
+  ];
+  
+  sheet.appendRow(row);
+  
+  return createResponse({
+    success: true,
+    item: {
+      id: id,
+      text: data.text,
+      type: data.type,
+      subtype: data.subtype || '',
+      priority: data.priority,
+      status: 'active',
+      createdAt: now,
+      updatedAt: now,
+      dueDate: data.dueDate || '',
+      createdBy: data.createdBy || '',
+      note: data.note || '',
+      assignee: data.assignee || ''
+    }
+  });
+}
+
+// PATCH /items/:id (update)
+function handleUpdateItem(data) {
+  const sheet = getSheet();
+  const dataRange = sheet.getDataRange();
+  const values = dataRange.getValues();
+  
+  let rowIndex = -1;
+  for (let i = HEADER_ROW; i &lt; values.length; i++) {
+    if (values[i][COL_ID] === data.id) {
+      rowIndex = i;
+      break;
+    }
+  }
+  
+  if (rowIndex === -1) {
+    return createResponse({ error: 'Item not found' }, 404);
+  }
+  
+  const row = values[rowIndex];
+  const now = Date.now();
+  
+  // Ensure row has enough columns (for backward compatibility)
+  while (row.length &lt;= COL_ASSIGNEE) {
+    row.push('');
+  }
+  
+  if (data.status !== undefined) row[COL_STATUS] = data.status;
+  if (data.text !== undefined) row[COL_TEXT] = data.text;
+  if (data.priority !== undefined) row[COL_PRIORITY] = data.priority;
+  if (data.subtype !== undefined) row[COL_SUBTYPE] = data.subtype;
+  if (data.assignee !== undefined) row[COL_ASSIGNEE] = data.assignee;
+  if (data.dueDate !== undefined) row[COL_DUE_DATE] = data.dueDate;
+  if (data.note !== undefined) row[COL_NOTE] = data.note;
+  
+  row[COL_UPDATED_AT] = now;
+  
+  const range = sheet.getRange(rowIndex + 1, 1, 1, row.length);
+  range.setValues([row]);
+  
+  return createResponse({
+    success: true,
+    item: {
+      id: row[COL_ID],
+      text: row[COL_TEXT],
+      type: row[COL_TYPE],
+      subtype: row[COL_SUBTYPE] || '',
+      priority: row[COL_PRIORITY],
+      status: row[COL_STATUS],
+      createdAt: row[COL_CREATED_AT],
+      updatedAt: row[COL_UPDATED_AT],
+      dueDate: row[COL_DUE_DATE] || '',
+      createdBy: row[COL_CREATED_BY] || '',
+      note: row[COL_NOTE] || '',
+      assignee: (row[COL_ASSIGNEE] !== undefined &amp;&amp; row[COL_ASSIGNEE] !== null) ? row[COL_ASSIGNEE] : ''
+    }
+  });
+}
+
+// PATCH /items/:id/archive
+function handleArchiveItem(data) {
+  const sheet = getSheet();
+  const dataRange = sheet.getDataRange();
+  const values = dataRange.getValues();
+  
+  let rowIndex = -1;
+  for (let i = HEADER_ROW; i &lt; values.length; i++) {
+    if (values[i][COL_ID] === data.id) {
+      rowIndex = i;
+      break;
+    }
+  }
+  
+  if (rowIndex === -1) {
+    return createResponse({ error: 'Item not found' }, 404);
+  }
+  
+  const row = values[rowIndex];
+  row[COL_STATUS] = 'archived';
+  row[COL_UPDATED_AT] = Date.now();
+  
+  const range = sheet.getRange(rowIndex + 1, 1, 1, row.length);
+  range.setValues([row]);
+  
+  return createResponse({ success: true });
+}
+
+// GET /calendar
+function handleGetCalendar(e) {
+  const days = parseInt(e.parameter.days || '3', 10);
+  const calendar = CalendarApp.getDefaultCalendar();
+  const now = new Date();
+  const endDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+  
+  const events = calendar.getEvents(now, endDate);
+  
+  const eventsByDate = {};
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  events.forEach(event =&gt; {
+    const eventDate = new Date(event.getStartTime());
+    const dateKey = formatDate(eventDate);
+    const dateLabel = getDateLabel(eventDate, today);
+    
+    if (!eventsByDate[dateKey]) {
+      eventsByDate[dateKey] = {
+        date: dateKey,
+        label: dateLabel,
+        events: []
+      };
+    }
+    
+    eventsByDate[dateKey].events.push({
+      start: formatTime(event.getStartTime()),
+      end: formatTime(event.getEndTime()),
+      title: event.getTitle(),
+      description: event.getDescription() || ''
+    });
+  });
+  
+  const daysArray = Object.values(eventsByDate).sort((a, b) =&gt; {
+    return a.date.localeCompare(b.date);
+  });
+  
+  return createResponse({ days: daysArray });
+}
+
+// Helper: Get sheet
+function getSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_NAME);
+  
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_NAME);
+    sheet.getRange(HEADER_ROW, 1, 1, 12).setValues([[
+      'id', 'text', 'type', 'subtype', 'priority', 'status',
+      'createdAt', 'updatedAt', 'dueDate', 'createdBy', 'note', 'assignee'
+    ]]);
+  }
+  
+  return sheet;
+}
+
+// Helper: Create response
+function createResponse(data, statusCode = 200) {
+  const output = ContentService.createTextOutput(JSON.stringify(data));
+  output.setMimeType(ContentService.MimeType.JSON);
+  return output;
+}
+
+// Helper: Format date
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// Helper: Format time
+function formatTime(date) {
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+// Helper: Get date label
+function getDateLabel(date, today) {
+  const diffDays = Math.floor((date - today) / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Tomorrow';
+  if (diffDays === 2) return 'Day+2';
+  
+  return formatDate(date);
+}</div>
+          </div>
+        </div>
+
+        <hr class="step-divider" />
+
+        <div class="step3-block">
+          <div class="feature-text">
+            <p>3-3 點擊上方 💾 儲存。</p>
+          </div>
+          <div class="feature-media feature-media-full">
+            <img src="manual/04-1.png" alt="儲存程式碼示意" />
+          </div>
+        </div>
+
+        <p class="step-tip">📌 請放心：不需要看懂內容、不需要修改任何一行 —「全刪 → 全貼 → 儲存」就對了。</p>
+      </div>
+
+      <!-- Row 4 -->
+      <div class="feature-row" id="step4">
+        <div class="feature-text">
+          <div class="step-label">步驟 4</div>
+          <h3 class="feature-title">新增部署作業</h3>
+          <p class="feature-sub">點擊右上角【部署】，選擇【新增部署作業】。</p>
+        </div>
+        <div class="feature-media">
+          <img src="manual/05.png" alt="部署 → 新增部署作業" />
+        </div>
+      </div>
+
+      <!-- Row 5 -->
+      <div class="feature-row" id="step5">
+        <div class="feature-text">
+          <div class="step-label">步驟 5</div>
+          <h3 class="feature-title">選擇「網頁應用程式」</h3>
+          <p class="feature-sub">在部署視窗中點擊齒輪圖示 ⚙️，選擇【網頁應用程式】。</p>
+        </div>
+        <div class="feature-media">
+          <img src="manual/06.png" alt="選擇網頁應用程式" />
+        </div>
+      </div>
+
+      <!-- Row 6 -->
+      <div class="feature-row" id="step6">
+        <div class="feature-text">
+          <div class="step-label">步驟 6</div>
+          <h3 class="feature-title">設定存取權限</h3>
+          <p class="feature-sub">
+            執行身分選「我（你的 Google 帳號）」、誰可以存取選【所有人】，然後點擊右下角【部署】→【授權存取權限】。
+          </p>
+        </div>
+        <div class="feature-media">
+          <div class="media-grid-2 media-grid-stack">
+            <img src="manual/07.png" alt="部署設定畫面" />
+            <img src="manual/08.png" alt="授權存取權限" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 7 -->
+      <div class="feature-row step7-unified" id="step7">
+        <div class="feature-text step7-header">
+          <div class="step-label">步驟 7</div>
+          <h3 class="feature-title">Google 授權</h3>
+          <p class="feature-sub">授權 Google Sheets 資料，好讓 APP 可以讀取。</p>
+        </div>
+
+        <hr class="step-divider" />
+
+        <div class="step7-block">
+          <div class="feature-text">
+            <p>7-1 看到「這個應用程式未經 Google 驗證」是正常的。點擊【進階 Advanced】→【前往 Go to ...】（第一次會跳出此畫面）。</p>
+          </div>
+          <div class="feature-media feature-media-full">
+            <div class="media-grid-2 media-grid-stack">
+              <img src="manual/8-1.png" alt="未經驗證警告畫面" />
+              <img src="manual/8-2.png" alt="進階 → 繼續" />
+            </div>
+          </div>
+        </div>
+
+        <hr class="step-divider" />
+
+        <div class="step7-block">
+          <div class="feature-text">
+            <p>7-2 勾選全部權限 → 點擊【Continue】。</p>
+          </div>
+          <div class="feature-media feature-media-full">
+            <div class="media-grid-2 media-grid-stack">
+              <img src="manual/09.png" alt="權限勾選畫面" />
+              <img src="manual/10.png" alt="確認授權畫面" />
+            </div>
+          </div>
+        </div>
+
+        <p class="step-tip">📌 重點說明：這個授權是「你自己允許你自己的 Google Sheets 資料運作」，此 APP 的作者是看不到你的資料！</p>
+      </div>
+
+      <!-- Row 8 -->
+      <div class="feature-row" id="step8">
+        <div class="feature-text">
+          <div class="step-label">步驟 8</div>
+          <h3 class="feature-title">複製你的「專屬連線網址」</h3>
+          <p class="feature-sub">
+            畫面顯示「已成功更新部署作業」後，在「網頁應用程式」下面點擊【複製】網址。
+          </p>
+          <p class="step-tip">🔑 這個網址非常重要，請先留著，下一步手機 APP 會用到它。</p>
+        </div>
+        <div class="feature-media">
+          <img src="manual/11.png" alt="複製網頁應用程式網址" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 二、APP 安裝與設定（左文右圖） -->
+    <section class="feature-section" id="section-step2">
+      <h2 class="section-title-main">安裝任務（二）APP 安裝與設定（手機完成）</h2>
+      <p class="section-intro">接下來的步驟 <strong>全部用手機</strong> 就可以完成。</p>
+
+      <!-- Row 9 -->
+      <div class="feature-row" id="step9">
+        <div class="feature-text">
+          <div class="step-label">步驟 1</div>
+          <h3 class="feature-title">在手機上打開待辦清單網頁</h3>
+          <p class="feature-sub">
+            📱 掃描 QR Code，或用手機瀏覽器輸入下方網址。
+          </p>
+          <p class="step-tip">
+            📌 請使用 Safari（iPhone）或 Chrome（Android），不建議使用 IG / LINE 內建瀏覽器。
+          </p>
+        </div>
+        <div class="feature-media">
+          <img src="images/qrcode.png" alt="待辦清單 QR Code" style="max-width:220px;margin-left:auto;margin-right:auto;" />
+          <p id="appUrlDisplay" style="word-break:break-all;font-size:13px;color:var(--text-muted);margin-top:8px;text-align:center"></p>
+        </div>
+      </div>
+
+      <!-- Row 10 -->
+      <div class="feature-row" id="step10">
+        <div class="feature-text">
+          <div class="step-label">步驟 2</div>
+          <h3 class="feature-title">把網頁加入到手機主畫面（像 APP 一樣）</h3>
+          <p class="feature-sub">
+            在瀏覽器中點擊「分享」按鈕，選擇「加入主畫面」。<br>
+            完成後，手機桌面會出現「熊熊貓貓」圖示。
+          </p>
+        </div>
+        <div class="feature-media">
+          <div class="media-grid-2">
+            <div>
+              <p style="font-size:12px;color:var(--text-muted);margin:0 0 4px;">Safari</p>
+              <video src="manual/safari_video.mp4" muted playsinline loop autoplay id="safariVideo"></video>
+            </div>
+            <div>
+              <p style="font-size:12px;color:var(--text-muted);margin:0 0 4px;">Chrome</p>
+              <video src="manual/chrome_video.mov" muted playsinline loop autoplay id="chromeVideo"></video>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 11 -->
+      <div class="feature-row" id="step11">
+        <div class="feature-text">
+          <div class="step-label">步驟 3</div>
+          <h3 class="feature-title">貼上「專屬連線網址」，測試連線</h3>
+          <p class="feature-sub">
+            打開剛剛安裝好的 APP，點擊「前往設定」，將剛剛複製的「網頁應用程式網址」貼上，點擊「測試連線」。
+          </p>
+        </div>
+        <div class="feature-media">
+          <div class="media-grid-3">
+            <img src="manual/p3-1.png" alt="前往設定" />
+            <img src="manual/p3-2.png" alt="貼上連線網址" />
+            <img src="manual/p3-3.png" alt="測試連線" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 12 -->
+      <div class="feature-row" id="step12">
+        <div class="feature-text">
+          <div class="step-label">步驟 4</div>
+          <h3 class="feature-title">儲存並啟用</h3>
+          <p class="feature-sub">
+            若畫面出現：✅ 連線成功！已讀到你的 Google Sheets，請點擊「儲存並啟用」。
+          </p>
+        </div>
+        <div class="feature-media">
+          <div class="media-grid-2">
+            <img src="manual/p4-1.png" alt="連線成功畫面" />
+            <img src="manual/p4-2.png" alt="儲存並啟用" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 13 -->
+      <div class="feature-row" id="step13">
+        <div class="feature-text">
+          <div class="step-label">步驟 5</div>
+          <h3 class="feature-title">恭喜你！APP 設定完成 🎉</h3>
+          <p class="feature-sub">
+            點擊左上角「返回」。若畫面中出現「範例 A」「範例 B」等預設資料，恭喜你！安裝完成啦！
+          </p>
+          <p>🎉 你專屬的熊熊貓貓待辦清單已經安裝完成，現在開始，和另一半一起記錄生活吧 ❤️</p>
+        </div>
+        <div class="feature-media">
+          <div class="media-grid-2">
+            <img src="manual/p5-1.png" alt="範例清單畫面 1" />
+            <img src="manual/p5-2.png" alt="範例清單畫面 2" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Security -->
+    <section class="security">
+      <h3>🔒 安全與隱私</h3>
+      <p>你的資料只存在你自己的 Google 帳號裡，作者看不到你的任何內容。表格、連線網址都是你專屬的。</p>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq" id="section-faq">
+      <h2 class="section-title">常見問題</h2>
+      <div class="faq-item" data-faq="1">
+        <div class="faq-q">這個要錢嗎？</div>
+        <div class="faq-a"><div class="faq-a-inner">完全免費</div></div>
+      </div>
+      <div class="faq-item" data-faq="2">
+        <div class="faq-q">我的資料會被作者看到嗎？</div>
+        <div class="faq-a"><div class="faq-a-inner">不會。資料存在你自己的 Google 表格裡，作者無法存取你的資料。</div></div>
+      </div>
+      <div class="faq-item" data-faq="3">
+        <div class="faq-q">為什麼要選「任何人可以存取」？會不會不安全？</div>
+        <div class="faq-a"><div class="faq-a-inner">這是為了讓待辦清單透過網址讀寫你的表格。只有知道這串網址的人才能使用，一般人很難猜到。你的表格仍然受 Google 帳號權限保護。</div></div>
+      </div>
+      <div class="faq-item" data-faq="4">
+        <div class="faq-q">我貼了網址但顯示連線失敗怎麼辦？</div>
+        <div class="faq-a"><div class="faq-a-inner">請確認：網址完整（結尾要有 /exec）、已在 Google 那邊完成部署、若用 IG/LINE 內建瀏覽器請改用 Safari 或 Chrome。詳見下方「排錯」區。</div></div>
+      </div>
+      <div class="faq-item" data-faq="5">
+        <div class="faq-q">另一半要怎麼一起用？</div>
+        <div class="faq-a"><div class="faq-a-inner">把表格分享給對方，或把同一條連線網址給對方貼到他的設定頁。兩人用同一個網址、同一份表格就能同步。</div></div>
+      </div>
+      <div class="faq-item" data-faq="6">
+        <div class="faq-q">我換手機需要重做嗎？</div>
+        <div class="faq-a"><div class="faq-a-inner">不需要。只要到設定頁再貼一次連線網址，或重新打開待辦清單頁面即可。</div></div>
+      </div>
+      <div class="faq-item" data-faq="7">
+        <div class="faq-q">可以匯出資料嗎？</div>
+        <div class="faq-a"><div class="faq-a-inner">可以！表格本身就是你的，直接從 Google 表格下載或匯出即可。</div></div>
+      </div>
+      <div class="faq-item" data-faq="8">
+        <div class="faq-q">這個可以離線嗎？</div>
+        <div class="faq-a"><div class="faq-a-inner">安裝到桌面後會有部分快取，但讀寫資料需要網路。網路較穩時使用體驗最好。</div></div>
+      </div>
+    </section>
+
+    <!-- Troubleshooting -->
+    <section class="trouble" id="section-trouble">
+      <h2 class="section-title">排錯指南</h2>
+      <div class="trouble-item">
+        <div class="trouble-symptom">症狀：測試連線失敗</div>
+        <div class="trouble-fix">解法：確認網址完整（結尾為 /exec）、已完成「部署」、權限選「任何人」。可試著重新部署一次。</div>
+      </div>
+      <div class="trouble-item">
+        <div class="trouble-symptom">症狀：新增／更新沒反應</div>
+        <div class="trouble-fix">解法：重新整理頁面、改用 Chrome 或 Safari、確認不是 IG 內建瀏覽器。</div>
+      </div>
+      <div class="trouble-item">
+        <div class="trouble-symptom">症狀：另一半看不到資料</div>
+        <div class="trouble-fix">解法：確認兩人使用同一個連線網址，或表格已分享給對方（編輯權限）。</div>
+      </div>
+    </section>
+
+    <footer>
+      <p>版本 v1.0 · <a href="https://forms.gle/65RiUZVL4Th8ia8WA" target="_blank" rel="noopener noreferrer">回饋表單</a></p>
+    </footer>
+  </div>
+
+  <script>
+    // Config
+    const CONFIG = {
+      sheetTemplate: 'https://docs.google.com/spreadsheets/d/1_38-IQwS9Vj1iHzXWJAQ68WghhwBUvRGLVG8RobUDpg/copy',
+      feedbackForm: 'https://forms.gle/65RiUZVL4Th8ia8WA',
+      settingsPage: './settings.html',
+      appUrl: 'https://kittyandbear.github.io/todo/index.html'
+    };
+
+    // 顯示 APP 網址在 QR Code 下方
+    (function () {
+      const appUrl = CONFIG.appUrl || new URL('./index.html', window.location.href).href;
+      const urlEl = document.getElementById('appUrlDisplay');
+      if (urlEl) urlEl.textContent = '🌐 ' + appUrl;
+    })();
+
+    // 快速導覽卡片 → 平滑捲動到對應區塊
+    document.querySelectorAll('.nav-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const target = card.getAttribute('data-target');
+        if (!target) return;
+        const el = document.querySelector(target);
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const offsetTop = rect.top + window.pageYOffset - 16;
+        window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+      });
+    });
+
+    // FAQ accordion
+    document.querySelectorAll('.faq-item').forEach(item => {
+      const q = item.querySelector('.faq-q');
+      q.addEventListener('click', () => {
+        item.classList.toggle('open');
+      });
+      q.setAttribute('tabindex', '0');
+      q.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          item.classList.toggle('open');
+        }
+      });
+    });
+
+    // 複製 Apps Script 程式碼
+    function copyScript() {
+      const block = document.getElementById('scriptCode');
+      const code = block ? block.textContent.trim() : '';
+      if (!code) {
+        alert('找不到程式碼區塊，請確認頁面是否完整載入。');
+        return;
+      }
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        if (btn) {
+          const orig = btn.textContent;
+          btn.textContent = '✅ 已複製！';
+          setTimeout(() => { btn.textContent = orig; }, 2000);
+        }
+      }).catch(() => {
+        alert('複製失敗，請手動選取上方程式碼複製');
+      });
+    }
+
+    // 更新 config 相關連結（如果之後有用 placeholder）
+    const sheetLink = document.querySelector('[href*="YOUR_TEMPLATE_ID"]');
+    if (sheetLink) sheetLink.setAttribute('href', CONFIG.sheetTemplate);
+
+    const feedbackLink = document.querySelector('footer a[href*="YOUR_FEEDBACK"]');
+    if (feedbackLink) feedbackLink.setAttribute('href', CONFIG.feedbackForm);
+  </script>
+</body>
+</html>
