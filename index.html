@@ -183,6 +183,7 @@
     .item-content {
       -webkit-flex: 1; /* Fallback for older iOS */
       flex: 1;
+      min-width: 0; /* 允許在 flex 中縮小，避免長文字撐破卡片 */
       display: -webkit-flex; /* Fallback for older iOS */
       display: flex;
       -webkit-flex-direction: column; /* Fallback for older iOS */
@@ -197,6 +198,8 @@
     .text {
       font-size: 16px;
       line-height: 1.5; /* Increased from 1.4 for better readability */
+      overflow-wrap: break-word; /* 長文字自動換行 */
+      word-break: break-word; /* 無空格連續字串也可斷行 */
     }
 
     .done {
@@ -1021,10 +1024,7 @@
           render();
         }
         
-        // Remove loading overlay after data is loaded
-        setTimeout(() => {
-          loadingOverlay.classList.remove('show');
-        }, 300);
+        loadingOverlay.classList.remove('show');
       } catch (error) {
         console.error('Failed to fetch items:', error);
         loadingOverlay.classList.remove('show');
@@ -1158,16 +1158,19 @@
       });
     }
 
-    // Toggle item status
+    // Toggle item status（樂觀更新：先更新 UI，背景同步 API）
     async function toggleStatus(id) {
       const item = items.find(i => i.id === id);
       if (!item) return;
 
       const newStatus = item.status === 'active' ? 'done' : 'active';
-      
-      // Show loading overlay
-      reloadLoadingImages(); // Reload APNG before showing
-      loadingOverlay.classList.add('show');
+      const prevStatus = item.status;
+
+      // 樂觀更新：立即更新 UI
+      item.status = newStatus;
+      item.updatedAt = Date.now();
+      localStorage.setItem(CACHE_KEY, JSON.stringify(items));
+      render();
 
       try {
         const formData = new FormData();
@@ -1183,34 +1186,35 @@
         });
 
         const data = await response.json();
-        if (data.success) {
-          item.status = newStatus;
+        if (!data.success) {
+          // API 失敗：還原狀態
+          item.status = prevStatus;
           item.updatedAt = Date.now();
           localStorage.setItem(CACHE_KEY, JSON.stringify(items));
           render();
-          
-          // Remove loading overlay after a short delay
-          setTimeout(() => {
-            loadingOverlay.classList.remove('show');
-          }, 300);
-        } else {
-          loadingOverlay.classList.remove('show');
           alert('更新失敗，請稍後再試');
         }
       } catch (error) {
         console.error('Failed to update item:', error);
-        loadingOverlay.classList.remove('show');
+        item.status = prevStatus;
+        item.updatedAt = Date.now();
+        localStorage.setItem(CACHE_KEY, JSON.stringify(items));
+        render();
         alert('更新失敗，請稍後再試');
       }
     }
 
-    // Archive item
+    // Archive item（樂觀更新：先從 UI 移除，背景同步 API）
     async function archiveItem(id) {
       if (!confirm('確定要刪除這個項目嗎？')) return;
 
-      // Show loading overlay
-      reloadLoadingImages(); // Reload APNG before showing
-      loadingOverlay.classList.add('show');
+      const removedItem = items.find(i => i.id === id);
+      if (!removedItem) return;
+
+      // 樂觀更新：立即從清單移除
+      items = items.filter(i => i.id !== id);
+      localStorage.setItem(CACHE_KEY, JSON.stringify(items));
+      render();
 
       try {
         const formData = new FormData();
@@ -1225,22 +1229,18 @@
         });
 
         const data = await response.json();
-        if (data.success) {
-          items = items.filter(i => i.id !== id);
+        if (!data.success) {
+          // API 失敗：還原項目
+          items.push(removedItem);
           localStorage.setItem(CACHE_KEY, JSON.stringify(items));
           render();
-          
-          // Remove loading overlay after a short delay
-          setTimeout(() => {
-            loadingOverlay.classList.remove('show');
-          }, 300);
-        } else {
-          loadingOverlay.classList.remove('show');
           alert('刪除失敗，請稍後再試');
         }
       } catch (error) {
         console.error('Failed to archive item:', error);
-        loadingOverlay.classList.remove('show');
+        items.push(removedItem);
+        localStorage.setItem(CACHE_KEY, JSON.stringify(items));
+        render();
         alert('刪除失敗，請稍後再試');
       }
     }
@@ -1359,13 +1359,8 @@
             currentTab = targetTabType;
           }
           
-          // Fetch fresh data and render
-          await fetchItems();
-          
-          // Remove loading overlay after a short delay
-          setTimeout(() => {
-            loadingOverlay.classList.remove('show');
-          }, 300);
+          render();
+          loadingOverlay.classList.remove('show');
         } else {
           console.error('Unexpected response format:', data);
           loadingOverlay.classList.remove('show');
