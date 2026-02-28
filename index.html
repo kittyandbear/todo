@@ -1297,83 +1297,77 @@
         text: text,
         type: newType.value,
         priority: newPriority.value,
-        assignee: newAssignee.value // Required field
+        assignee: newAssignee.value
       };
 
-      // Show loading overlay
-      reloadLoadingImages(); // Reload APNG before showing
+      reloadLoadingImages();
       loadingOverlay.classList.add('show');
-      closeSheet(); // Close sheet immediately when loading starts
+      closeSheet();
 
-      try {
-        console.log('Sending request:', itemData);
-        console.log('API URL:', getApiBaseUrl());
-        
-        // Use FormData to avoid CORS preflight issues
-        const formData = new FormData();
-        formData.append('payload', JSON.stringify(itemData));
-        
-        const response = await fetch(getApiBaseUrl(), {
-          method: 'POST',
-          body: formData
-        });
+      const apiUrl = getApiBaseUrl();
 
-        console.log('Response status:', response.status, response.statusText);
-        
-        // Get response text first to see what we're getting
-        const responseText = await response.text();
-        console.log('Response text:', responseText);
+      // 重試機制：網路不穩時自動重試最多 3 次，減少 Load failed 發生率
+      const maxRetries = 2;
 
-        let data;
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
-          data = JSON.parse(responseText);
-        } catch (parseError) {
-          console.error('Failed to parse JSON:', parseError);
-          console.error('Response was:', responseText);
-          loadingOverlay.classList.remove('show');
-          alert('伺服器回應格式錯誤，請檢查 Console');
-          return;
-        }
-
-        console.log('Parsed data:', data);
-
-        if (data.error) {
-          console.error('API error:', data.error);
-          loadingOverlay.classList.remove('show');
-          alert('新增失敗：' + data.error);
-          return;
-        }
-
-        if (data.success && data.item) {
-          items.push(data.item);
-          localStorage.setItem(CACHE_KEY, JSON.stringify(items));
-          
-          // Always switch to the correct tab based on item type
-          const targetTabType = data.item.type; // 'todo' or 'shopping'
-          const targetTab = document.querySelector(`[data-tab="${targetTabType}"]`);
-          
-          if (targetTab && currentTab !== targetTabType) {
-            // Switch to the correct tab
-            tabs.forEach(t => t.classList.remove('active'));
-            targetTab.classList.add('active');
-            currentTab = targetTabType;
+          if (attempt > 0) {
+            await new Promise(r => setTimeout(r, 1500));
           }
           
-          render();
-          // 使用 API 回傳的資料即可，避免二次請求造成 Load failed
-          setTimeout(() => {
+          const formData = new FormData();
+          formData.append('payload', JSON.stringify(itemData));
+          
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            body: formData
+          });
+
+          const responseText = await response.text();
+          let data;
+          try {
+            data = JSON.parse(responseText);
+          } catch (parseError) {
             loadingOverlay.classList.remove('show');
-          }, 600);
-        } else {
-          console.error('Unexpected response format:', data);
+            alert('伺服器回應格式錯誤，請檢查 Console');
+            return;
+          }
+
+          if (data.error) {
+            loadingOverlay.classList.remove('show');
+            alert('新增失敗：' + data.error);
+            return;
+          }
+
+          if (data.success && data.item) {
+            items.push(data.item);
+            localStorage.setItem(CACHE_KEY, JSON.stringify(items));
+            
+            const targetTabType = data.item.type;
+            const targetTab = document.querySelector(`[data-tab="${targetTabType}"]`);
+            if (targetTab && currentTab !== targetTabType) {
+              tabs.forEach(t => t.classList.remove('active'));
+              targetTab.classList.add('active');
+              currentTab = targetTabType;
+            }
+            
+            render();
+            setTimeout(() => {
+              loadingOverlay.classList.remove('show');
+            }, 600);
+            return;
+          }
+
           loadingOverlay.classList.remove('show');
           alert('新增失敗：回應格式不正確，請檢查 Console');
+          return;
+        } catch (error) {
+          console.error('Add attempt ' + (attempt + 1) + ' failed:', error.message);
+          if (attempt === maxRetries) {
+            loadingOverlay.classList.remove('show');
+            alert('新增失敗：' + (error.message || '請稍後再試') + '\n請檢查網路連線後再試');
+          }
         }
-      } catch (error) {
-        console.error('Failed to create item:', error);
-        console.error('Error details:', error.message, error.stack);
-        loadingOverlay.classList.remove('show');
-        alert('新增失敗：' + (error.message || '請稍後再試') + '\n請檢查 Console 查看詳細錯誤');
       }
     }
 
