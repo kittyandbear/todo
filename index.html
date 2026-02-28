@@ -1024,7 +1024,10 @@
           render();
         }
         
-        loadingOverlay.classList.remove('show');
+        // Remove loading overlay after data is loaded
+        setTimeout(() => {
+          loadingOverlay.classList.remove('show');
+        }, 600);
       } catch (error) {
         console.error('Failed to fetch items:', error);
         loadingOverlay.classList.remove('show');
@@ -1158,19 +1161,16 @@
       });
     }
 
-    // Toggle item status（樂觀更新：先更新 UI，背景同步 API）
+    // Toggle item status
     async function toggleStatus(id) {
       const item = items.find(i => i.id === id);
       if (!item) return;
 
       const newStatus = item.status === 'active' ? 'done' : 'active';
-      const prevStatus = item.status;
-
-      // 樂觀更新：立即更新 UI
-      item.status = newStatus;
-      item.updatedAt = Date.now();
-      localStorage.setItem(CACHE_KEY, JSON.stringify(items));
-      render();
+      
+      // Show loading overlay
+      reloadLoadingImages();
+      loadingOverlay.classList.add('show');
 
       try {
         const formData = new FormData();
@@ -1186,35 +1186,32 @@
         });
 
         const data = await response.json();
-        if (!data.success) {
-          // API 失敗：還原狀態
-          item.status = prevStatus;
+        if (data.success) {
+          item.status = newStatus;
           item.updatedAt = Date.now();
           localStorage.setItem(CACHE_KEY, JSON.stringify(items));
           render();
+          
+          setTimeout(() => {
+            loadingOverlay.classList.remove('show');
+          }, 600);
+        } else {
+          loadingOverlay.classList.remove('show');
           alert('更新失敗，請稍後再試');
         }
       } catch (error) {
         console.error('Failed to update item:', error);
-        item.status = prevStatus;
-        item.updatedAt = Date.now();
-        localStorage.setItem(CACHE_KEY, JSON.stringify(items));
-        render();
+        loadingOverlay.classList.remove('show');
         alert('更新失敗，請稍後再試');
       }
     }
 
-    // Archive item（樂觀更新：先從 UI 移除，背景同步 API）
+    // Archive item
     async function archiveItem(id) {
       if (!confirm('確定要刪除這個項目嗎？')) return;
 
-      const removedItem = items.find(i => i.id === id);
-      if (!removedItem) return;
-
-      // 樂觀更新：立即從清單移除
-      items = items.filter(i => i.id !== id);
-      localStorage.setItem(CACHE_KEY, JSON.stringify(items));
-      render();
+      reloadLoadingImages();
+      loadingOverlay.classList.add('show');
 
       try {
         const formData = new FormData();
@@ -1229,18 +1226,21 @@
         });
 
         const data = await response.json();
-        if (!data.success) {
-          // API 失敗：還原項目
-          items.push(removedItem);
+        if (data.success) {
+          items = items.filter(i => i.id !== id);
           localStorage.setItem(CACHE_KEY, JSON.stringify(items));
           render();
+          
+          setTimeout(() => {
+            loadingOverlay.classList.remove('show');
+          }, 600);
+        } else {
+          loadingOverlay.classList.remove('show');
           alert('刪除失敗，請稍後再試');
         }
       } catch (error) {
         console.error('Failed to archive item:', error);
-        items.push(removedItem);
-        localStorage.setItem(CACHE_KEY, JSON.stringify(items));
-        render();
+        loadingOverlay.classList.remove('show');
         alert('刪除失敗，請稍後再試');
       }
     }
@@ -1360,7 +1360,10 @@
           }
           
           render();
-          loadingOverlay.classList.remove('show');
+          // 使用 API 回傳的資料即可，避免二次請求造成 Load failed
+          setTimeout(() => {
+            loadingOverlay.classList.remove('show');
+          }, 600);
         } else {
           console.error('Unexpected response format:', data);
           loadingOverlay.classList.remove('show');
